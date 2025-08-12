@@ -3,19 +3,22 @@ export class ControladorUsuario {
     this.UsuarioServicio = usuarioServicio
   }
 
-  obtenerUsuarios = async (req, res) => {
-    const usuarios = await this.UsuarioServicio.obtenerUsuarios()
-    if (usuarios.error) return res.status(404).json({ error: usuarios.error })
-
-    return res.status(200).json(usuarios)
+  #manejarRespuesta = (servicioFn) => async (req, res) => {
+    try {
+      const respuesta = await servicioFn(req)
+      if (respuesta?.error) return res.status(404).json({ error: respuesta.error })
+      return res.status(200).json(respuesta)
+    } catch (error) {
+      return res.status(500).json({ error: 'Error interno del servidor' })
+    }
   }
 
-  editarUsuario = async (req, res) => {
-    const datos = req.body
-    const { id } = req.params
-    const usuarioActualizado = await this.UsuarioServicio.editarUsuario({ datos, id })
-    if (usuarioActualizado.error) return res.status(404).json({ error: usuarioActualizado.error })
+  obtenerUsuarios = this.#manejarRespuesta(() =>
+    this.UsuarioServicio.obtenerUsuarios())
 
-    return res.status(200).json(usuarioActualizado)
-  }
+  editarUsuario = this.#manejarRespuesta((req) =>
+    this.UsuarioServicio.editarUsuario({ datos: req.body, id: req.params.id }))
+
+  agregarUsuario = this.#manejarRespuesta((req) =>
+    this.UsuarioServicio.agregarUsuario({ datos: req.body }))
 }
