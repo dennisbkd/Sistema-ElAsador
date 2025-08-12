@@ -18,7 +18,6 @@ export class UsuarioServicio {
   }
 
   async editarUsuario ({ datos, id }) {
-    console.log(id)
     const { nombre, contrasena, idRol, estado } = datos
     try {
       await this.modelUsuario.update(
@@ -28,6 +27,18 @@ export class UsuarioServicio {
       return { succes: true }
     } catch (error) {
       return { error: error.message }
+    }
+  }
+
+  async agregarUsuario ({ datos }) {
+    const { nombre, contrasena, idRol, estado, correo } = datos
+    try {
+      const nuevoUsuario = await this.modelUsuario.create({
+        nombre, contrasena, correo, idRol, estado
+      })
+      return nuevoUsuario
+    } catch (error) {
+      return { error: 'Error al crear nuevo Usuario' + error.message }
     }
   }
 }

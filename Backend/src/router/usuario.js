@@ -7,6 +7,7 @@ export const rutaUsuario = ({ usuarioServicio }) => {
 
   rutas.get('/obtener', controladorUsuario.obtenerUsuarios)
   rutas.put('/actualizar/:id', controladorUsuario.editarUsuario)
+  rutas.post('/agregar', controladorUsuario.agregarUsuario)
 
   return rutas
 }
