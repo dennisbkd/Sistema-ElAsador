@@ -29,8 +29,8 @@ export const TicketCocina = sequelize.define('TicketCocina',
       defaultValue: 'PENDIENTE'
     },
     prioridad: {
-      type: DataTypes.ENUM('Normal', 'URGENTE'),
-      defaultValue: 'Normal'
+      type: DataTypes.ENUM('NORMAL', 'URGENTE'),
+      defaultValue: 'NORMAL'
     },
     horaSolicitud: {
       type: DataTypes.DATE,

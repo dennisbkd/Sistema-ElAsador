@@ -2,36 +2,35 @@ import sequelize from '../database/conexion.js'
 import { DataTypes } from 'sequelize'
 
 export const Usuario = sequelize.define('Usuario', {
-  idUsuario: {
+  id: {
     primaryKey: true,
     autoIncrement: true,
     type: DataTypes.INTEGER
+  },
+  usuario: {
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: false
   },
   nombre: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  correo: {
-    type: DataTypes.STRING(100),
+  activo: {
+    type: DataTypes.BOOLEAN,
     unique: true
   },
-  contrasena: {
+  password: {
     type: DataTypes.STRING(100),
     allowNull: false
   },
-  idRol: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: 'Rol',
-      key: 'idRol'
-    }
-  },
-  estado: {
-    type: DataTypes.ENUM('Activo', 'Suspendido', 'Despedido'),
-    defaultValue: 'Activo'
+  rol: {
+    type: DataTypes.ENUM('ADMIN', 'CAJERO', 'MESERO'),
+    allowNull: false
   }
 },
 {
   tableName: 'Usuario',
-  timestamps: false
+  timestamps: true,
+  updatedAt: false
 })

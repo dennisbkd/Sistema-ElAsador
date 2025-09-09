@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize'
 import sequelize from '../database/conexion.js'
 
 export const Producto = sequelize.define('Producto', {
-  idProducto: {
+  id: {
     primaryKey: true,
     autoIncrement: true,
     type: DataTypes.INTEGER
@@ -11,18 +11,30 @@ export const Producto = sequelize.define('Producto', {
     type: DataTypes.STRING(100),
     allowNull: false
   },
+  descripcion: {
+    type: DataTypes.TEXT
+  },
+  categoriaId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'categoria',
+      key: 'id'
+    }
+  },
   precio: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
-  descripcion: {
-    type: DataTypes.TEXT
+  esPreparado: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
-  disponible: {
+  activo: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   }
 }, {
   tableName: 'Producto',
-  timestamps: false
+  timestamps: true
 })
