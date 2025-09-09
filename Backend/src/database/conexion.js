@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize'
 
-const sequelize = new Sequelize('dbAsador', 'root', 'root', {
+const sequelize = new Sequelize('azadordb', 'root', 'root', {
   host: 'localhost',
   dialect: 'mysql'
 })
