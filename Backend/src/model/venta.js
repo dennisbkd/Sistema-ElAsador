@@ -38,6 +38,10 @@ export const Venta = sequelize.define('Venta',
       defaultValue: 0,
       allowNull: true
     },
+    estado: {
+      type: DataTypes.ENUM('PENDIENTE', 'PREPARACION', 'LISTO', 'ENTREGADO', 'CANCELADO', 'PAGADO', 'RESERVADO'),
+      defaultValue: 'PENDIENTE'
+    },
     observaciones: {
       type: DataTypes.TEXT,
       allowNull: true

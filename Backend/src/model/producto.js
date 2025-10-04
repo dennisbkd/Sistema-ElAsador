@@ -36,5 +36,6 @@ export const Producto = sequelize.define('Producto', {
   }
 }, {
   tableName: 'Producto',
-  timestamps: true
+  timestamps: true,
+  updatedAt: false
 })

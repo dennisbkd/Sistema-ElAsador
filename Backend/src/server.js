@@ -1,7 +1,25 @@
 import { App } from './main.js'
-import { Usuario, Rol } from './model/index.js'
+import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
+import { StockServicio } from './services/stock.js'
+
 import { UsuarioServicio } from './services/usuario.js'
+import { VentaServicio } from './services/ventas.js'
 
-const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelRol: Rol })
+const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelVenta: Venta })
+const ventaServicio = new VentaServicio(
+  {
+    modeloVenta: Venta,
+    modeloDetalle: DetalleVenta,
+    modeloProducto: Producto,
+    modeloCategoria: Categoria
+  }
+)
+const stockServicio = new StockServicio({
+  modelStock: StockPlato,
+  modelProducto: Producto,
+  modelCategoria: Categoria,
+  modelUsuario: Usuario,
+  modelMovimientoS: MovimientoStock
+})
 
-App({ usuarioServicio })
+App({ usuarioServicio, ventaServicio, stockServicio })

@@ -25,7 +25,7 @@ export const Usuario = sequelize.define('Usuario', {
     allowNull: false
   },
   rol: {
-    type: DataTypes.ENUM('ADMIN', 'CAJERO', 'MESERO'),
+    type: DataTypes.ENUM('ADMINISTRADOR', 'CAJERO', 'MESERO'),
     allowNull: false
   }
 },

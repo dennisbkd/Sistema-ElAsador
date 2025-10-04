@@ -17,7 +17,7 @@ export class ControladorUsuario {
     this.UsuarioServicio.obtenerUsuarios())
 
   editarUsuario = this.#manejarRespuesta((req) =>
-    this.UsuarioServicio.editarUsuario({ datos: req.body, id: req.params.id }))
+    this.UsuarioServicio.editarUsuario({ data: req.body, id: req.params.id }))
 
   agregarUsuario = this.#manejarRespuesta((req) =>
     this.UsuarioServicio.agregarUsuario({ datos: req.body }))

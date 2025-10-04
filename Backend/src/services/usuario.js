@@ -1,44 +1,115 @@
 export class UsuarioServicio {
-  constructor ({ modelUsuario, modelRol }) {
+  constructor ({ modelUsuario, modelVenta }) {
     this.modelUsuario = modelUsuario
-    this.modelRol = modelRol
+    this.modelVenta = modelVenta
   }
 
   async obtenerUsuarios () {
     try {
-      const dataUsuario = await this.modelUsuario.findAll({ include: this.modelRol })
+      const dataUsuario = await this.modelUsuario.findAll()
 
-      if (!dataUsuario) {
-        return { error: 'Usuarios no encontrados' }
+      if (!dataUsuario || dataUsuario.length === 0) {
+        return { error: 'Lista vacia' }
       }
-      return dataUsuario
+      const DtoUsuario = dataUsuario.map((data) => {
+        const hora = new Date(data.createdAt).toISOString().substring(11, 16)
+        const fecha = data.createdAt.toISOString().split('T')[0]
+        return {
+          id: data.id,
+          nombre: data.nombre,
+          usuario: data.usuario,
+          rol: data.rol.toLowerCase(),
+          fecha,
+          hora,
+          activo: data.activo
+        }
+      })
+      const totales = this.totalDeActivosyAdmin(DtoUsuario)
+
+      return { DtoUsuario, totales }
     } catch (error) {
-      return { error: 'Error al consultar usuarios' }
+      console.error('Error al consultar usuarios:', error)
+      return { error: error.message }
     }
   }
 
-  async editarUsuario ({ datos, id }) {
-    const { nombre, contrasena, idRol, estado } = datos
+  async editarUsuario ({ data, id }) {
     try {
-      await this.modelUsuario.update(
-        { nombre, contrasena, idRol, estado },
-        { where: { idUsuario: id } }
+      const { nombre, usuario, rol, password, activo } = data
+
+      // 1. Primero hacer el update
+      const [affectedCount] = await this.modelUsuario.update(
+        { nombre, usuario, rol, password, activo },
+        { where: { id } }
       )
-      return { succes: true }
+
+      if (affectedCount === 0) {
+        return { error: 'Usuario no encontrado' }
+      }
+
+      // 2. Luego obtener el usuario actualizado
+      const usuarioActualizado = await this.modelUsuario.findByPk(id)
+
+      if (!usuarioActualizado) {
+        return { error: 'Usuario no encontrado después de actualizar' }
+      }
+
+      // 3. Formatear la respuesta
+      const hora = new Date(usuarioActualizado.createdAt).toISOString().substring(11, 16)
+      const fecha = usuarioActualizado.createdAt.toISOString().split('T')[0]
+
+      return {
+        id: usuarioActualizado.id,
+        nombre: usuarioActualizado.nombre,
+        usuario: usuarioActualizado.usuario,
+        rol: usuarioActualizado.rol.toLowerCase(),
+        fecha,
+        hora,
+        activo: usuarioActualizado.activo
+      }
     } catch (error) {
+      console.error('Error al Editar el usuario:', error)
       return { error: error.message }
     }
   }
 
   async agregarUsuario ({ datos }) {
-    const { nombre, contrasena, idRol, estado, correo } = datos
+    const { nombre, password, usuario, rol } = datos
     try {
-      const nuevoUsuario = await this.modelUsuario.create({
-        nombre, contrasena, correo, idRol, estado
+      const agregar = await this.modelUsuario.create({
+        nombre, password, usuario, rol
       })
-      return nuevoUsuario
+      const nuevoUsuario = await this.modelUsuario.findByPk(agregar.id)
+
+      const hora = new Date(nuevoUsuario.createdAt).toISOString().substring(11, 16)
+      const fecha = nuevoUsuario.createdAt.toISOString().split('T')[0]
+      return {
+        id: nuevoUsuario.id,
+        nombre: nuevoUsuario.nombre,
+        usuario: nuevoUsuario.usuario,
+        rol: nuevoUsuario.rol.toLowerCase(),
+        fecha,
+        hora,
+        activo: nuevoUsuario.activo
+      }
     } catch (error) {
       return { error: 'Error al crear nuevo Usuario' + error.message }
     }
+  }
+
+  totalDeActivosyAdmin = (usuarios) => {
+    const total = {
+      activos: 0,
+      totalAdmin: 0
+    }
+    usuarios.forEach(element => {
+      if (element.rol === 'administrador') {
+        total.totalAdmin += 1
+      }
+      if (element.activo) {
+        total.activos += 1
+      }
+    })
+    return total
   }
 }
