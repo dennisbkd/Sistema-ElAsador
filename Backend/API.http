@@ -1,0 +1,31 @@
+### usuario
+GET http://localhost:3000/usuario/obtener
+
+### editar
+PUT http://localhost:3000/usuario/actualizar/1
+Content-Type: application/json
+
+{
+  "activo": false,
+  "nombre": "ytsaaasde"
+}
+
+### agregar
+POST http://localhost:3000/usuario/agregar
+Content-Type: application/json
+
+{
+  "nombre":"Dennis prueba17",
+  "password": "hashed_password_denis",
+  "usuario": "prueba122",
+  "rol": "CAJERO"
+}
+
+
+### ventas
+GET http://localhost:3000/venta/delDia
+
+### STOCK
+GET http://localhost:3000/stock/estado
+### STOCK -> MOVIMIENTO
+GET http://localhost:3000/stock/movimiento
