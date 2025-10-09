@@ -5,12 +5,32 @@ import { CabeceraPage } from "../../../ui/cabecera/CabeceraPage"
 import { UserIcon } from "lucide-react"
 import { useFormUsuario } from "../hooks/useFormUsuario"
 import { FormProvider } from "../../../components/form/FormProvider"
+import { TablaUsuario } from "../components/TablaUsuario"
 
 
 export const UsuarioPage = () => {
 
   const { configuracionFormulario, guardarUsuario, modal } = useFormUsuario()
-
+  const usuarios = [
+    {
+      id: 1,
+      nombre: "Juan Pérez",
+      usuario: "juanp",
+      rol: "Administrador",
+      activo: true,
+      fechaRegistro: "2023-10-01",
+      hora: "10:30 AM"
+    },
+    {
+      id: 2,
+      nombre: "María Gómez",
+      usuario: "mariag",
+      rol: "Usuario",
+      activo: false,
+      fechaRegistro: "2023-09-15",
+      hora: "02:15 PM"
+    }
+  ];
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
@@ -21,6 +41,14 @@ export const UsuarioPage = () => {
           className="bg-gray-100"
 
         />
+
+        <TablaUsuario
+          usuarios={usuarios}
+          editar={modal.abrir}
+          cambiarEstado={() => { }}
+          isLoading={false}
+        />
+
         <Modal
           abierto={modal.isOpen}
           cambiarEstado={modal.setIsOpen}
