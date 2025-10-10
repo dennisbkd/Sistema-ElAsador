@@ -18,8 +18,7 @@ export const useFormUsuario = () => {
   const configuracionFormulario = useMemo(() => ({
     defaultValues: {
       nombre: modal.data?.nombre || '',
-      email: modal.data?.email || '',
-      password: modal.data?.password || '',
+      usuario: modal.data?.usuario || '',
       rol: modal.data?.rol || ''
     }
   }), [modal.data])
