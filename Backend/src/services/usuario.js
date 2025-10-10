@@ -19,14 +19,13 @@ export class UsuarioServicio {
           nombre: data.nombre,
           usuario: data.usuario,
           rol: data.rol.toLowerCase(),
-          fecha,
+          fechaRegistro: fecha,
           hora,
           activo: data.activo
         }
       })
-      const totales = this.totalDeActivosyAdmin(DtoUsuario)
 
-      return { DtoUsuario, totales }
+      return DtoUsuario
     } catch (error) {
       console.error('Error al consultar usuarios:', error)
       return { error: error.message }
@@ -95,21 +94,5 @@ export class UsuarioServicio {
     } catch (error) {
       return { error: 'Error al crear nuevo Usuario' + error.message }
     }
-  }
-
-  totalDeActivosyAdmin = (usuarios) => {
-    const total = {
-      activos: 0,
-      totalAdmin: 0
-    }
-    usuarios.forEach(element => {
-      if (element.rol === 'administrador') {
-        total.totalAdmin += 1
-      }
-      if (element.activo) {
-        total.activos += 1
-      }
-    })
-    return total
   }
 }
