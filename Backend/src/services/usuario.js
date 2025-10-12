@@ -95,4 +95,35 @@ export class UsuarioServicio {
       return { error: 'Error al crear nuevo Usuario' + error.message }
     }
   }
+
+  async cambiarEstadoUsuario ({ id }) {
+    try {
+      const usuario = await this.modelUsuario.findByPk(id)
+      if (!usuario) {
+        return { error: 'Usuario no encontrado' }
+      }
+
+      // Verificar si el usuario es un mesero y si tiene ventas activas
+      if (usuario.rol.toLowerCase() === 'mesero') {
+        const ventasActivas = await this.modelVenta.count({
+          where: {
+            meseroId: id,
+            estado: 'activa' // Ajusta esto según cómo defines una venta activa
+          }
+        })
+        if (ventasActivas > 0) {
+          return { error: 'No se puede desactivar un mesero con ventas activas' }
+        }
+      }
+
+      // Cambiar el estado del usuario
+      usuario.activo = !usuario.activo
+      await usuario.save()
+
+      return { mensaje: 'Estado de usuario actualizado', usuario }
+    } catch (error) {
+      console.error('Error al cambiar estado de usuario:', error)
+      return { error: error.message }
+    }
+  }
 }

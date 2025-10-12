@@ -21,4 +21,7 @@ export class ControladorUsuario {
 
   agregarUsuario = this.#manejarRespuesta((req) =>
     this.UsuarioServicio.agregarUsuario({ datos: req.body }))
+
+  cambiarEstadoUsuario = this.#manejarRespuesta((req) =>
+    this.UsuarioServicio.cambiarEstadoUsuario({ id: req.params.id }))
 }
