@@ -1,18 +1,23 @@
 import { useMemo } from "react"
-import { useModal } from "../../../hooks/formulario/useModal"
+import { useModal } from "../../../hooks/useModal";
+import { useCrearUsuario, useEditarUsuario } from "./useUsuarioQuery";
 
 
 export const useFormUsuario = () => {
   const modal = useModal()
+  const mutationCrear = useCrearUsuario()
+  const mutationEditar = useEditarUsuario()
 
   const guardarUsuario = (datos) => {
-    console.log('Guardando usuario con datos:', datos)
     if (modal.data) {
       // editar
-      console.log('Editando usuario:', modal.data)
+      if (modal.data.password === '' || !datos.password) {
+        delete datos.password
+      }
+      mutationEditar.mutate({ id: modal.data.id, data: datos })
     } else {
       // crear
-      console.log('Creando nuevo usuario', modal.data)
+      mutationCrear.mutate(datos)
     }
   }
   const configuracionFormulario = useMemo(() => ({

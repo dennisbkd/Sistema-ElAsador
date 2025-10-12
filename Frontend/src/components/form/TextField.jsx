@@ -1,7 +1,7 @@
 import { useFieldContext } from "."
 
 
-export const TextField = ({ label, icon: Icon, placeholder = "" }) => {
+export const TextField = ({ label, type = "text", icon: Icon, placeholder = "" }) => {
   const field = useFieldContext()
 
   return (
@@ -12,6 +12,7 @@ export const TextField = ({ label, icon: Icon, placeholder = "" }) => {
           <Icon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
         )}
         <input
+          type={type}
           id={field.name}
           value={field.state.value ?? ""}
           onChange={(e) => field.handleChange(e.target.value)}

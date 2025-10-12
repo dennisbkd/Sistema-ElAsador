@@ -3,7 +3,7 @@ export const BotonAccion = ({
   icon,
   label,
   variant = "primary",
-  disabled = false, 
+  disabled = false,
   isLoading = false,
   className = ""
 }) => {
@@ -24,7 +24,7 @@ export const BotonAccion = ({
       {isLoading ? (
         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
       ) : (
-        <Icon size={18} />
+        Icon && <Icon size={18} />
       )}
       <span className="whitespace-nowrap">
         {isLoading ? 'Cargando...' : label}
