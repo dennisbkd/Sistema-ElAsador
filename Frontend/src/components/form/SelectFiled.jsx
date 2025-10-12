@@ -25,10 +25,10 @@ export const SelectField = ({ label, options = [], placeholder = "Seleccionar...
     setIsOpen(false);
   };
 
-  const selectedOption = options.find(opt => opt.value === field.state.value);
+  const selectedOption = options.find(opt => opt.value.toLowerCase() === field.state.value.toLowerCase());
 
   return (
-    <div ref={selectRef} className="relative">
+    <div ref={selectRef} className="relative inset-0 z-50">
       {/* Label */}
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -81,8 +81,8 @@ export const SelectField = ({ label, options = [], placeholder = "Seleccionar...
                 type="button"
                 onClick={() => handleSelect(option.value)}
                 className={`w-full px-3 py-2 text-left transition-colors hover:bg-gray-100 ${field.state.value === option.value
-                    ? 'bg-blue-50 text-blue-600 border-blue-200'
-                    : 'text-gray-900'
+                  ? 'bg-blue-50 text-blue-600 border-blue-200'
+                  : 'text-gray-900'
                   } ${index === 0 ? 'rounded-t-lg' : ''} ${index === options.length - 1 ? 'rounded-b-lg' : ''
                   } border-b border-gray-100 last:border-b-0`}
                 transition={{ duration: 0.1 }}
