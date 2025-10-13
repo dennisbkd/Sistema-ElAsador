@@ -10,8 +10,8 @@ export  const menuItems = [
     },
     { title: "Gestión Ventas", icon: ShoppingCart, key:"ventas",
       subItems:[
-        {title: "Realizar Pedidos", path: "/home/pedido", icon: ClipboardPenLine},
-        {title: "Ver Pedidos", path:"/home/ver-pedidos", icon: ClipboardList}
+        {title: "Realizar Pedidos", path: "/home/pedido/listar", icon: ClipboardPenLine},
+        {title: "Ver Pedidos", path:"/home/pedido/ver-pedidos", icon: ClipboardList}
       ]
      },
     { title: "Gestión Inventario", path: "/home/inventario", icon: Warehouse },
