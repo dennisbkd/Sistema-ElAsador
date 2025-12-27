@@ -1,24 +1,27 @@
 import { motion } from 'motion/react'
 import { Insignia } from '../../../ui/Insignia'
 import { EstadoEtiqueta } from '../../../ui/EstadoEtiqueta'
-import { Calendar, CheckCircle, Edit, XCircle, User, ShieldCheck } from 'lucide-react'
+import { Calendar, CheckCircle, Edit, XCircle, ShieldCheck, Trash2 } from 'lucide-react'
+import { BotonAccion } from '../../../ui/boton/BotonAccion'
 
-export const FilaUsuarios = ({ usuario, editar, cambiarEstado, estaCambiandoEstado }) => {
+export const FilaUsuarios = ({ usuario, editar, cambiarEstado, eliminar, estaCambiandoEstado }) => {
   return (
     <motion.tr
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="hover:bg-blue-50 transition-colors"
+      className="hover:bg-blue-50 transition-colors border-b border-gray-200"
     >
+      {/*id*/}
+      <td className="p-4 text-gray-600 font-bold">#{usuario.id}</td>
       {/* nombre */}
       <td className="p-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <User className="text-blue-600" size={18} />
+            {usuario.nombre.charAt(0).toUpperCase()}
+            {usuario.nombre.charAt(1)?.toLowerCase()}
           </div>
           <div>
             <div className="font-semibold text-gray-800">{usuario.nombre}</div>
-            <div className="text-sm text-gray-500">ID: {usuario.id}</div>
           </div>
         </div>
       </td>
@@ -71,6 +74,12 @@ export const FilaUsuarios = ({ usuario, editar, cambiarEstado, estaCambiandoEsta
             {usuario.activo ? <XCircle size={14} /> : <CheckCircle size={14} />}
             {usuario.activo ? 'Desactivar' : 'Activar'}
           </button>
+          <BotonAccion
+            onClick={() => eliminar(usuario.id)}
+            variant='danger'
+            icon={Trash2}
+            label="Eliminar"
+          />
         </div>
       </td>
     </motion.tr>
