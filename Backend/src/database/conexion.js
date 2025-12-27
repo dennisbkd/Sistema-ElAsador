@@ -2,7 +2,8 @@ import { Sequelize } from 'sequelize'
 
 const sequelize = new Sequelize('azadordb', 'root', 'root', {
   host: 'localhost',
-  dialect: 'mysql'
+  dialect: 'mysql',
+  timezone: '-04:00'
 })
 
 export default sequelize
