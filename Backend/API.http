@@ -1,5 +1,14 @@
 ### usuario
 GET http://localhost:3000/usuario/obtener
+### usuario
+DELETE http://localhost:3000/usuario/eliminar/2
+
+### usuario
+GET http://localhost:3000/usuario/total-usuarios
+
+### paginacion
+GET http://localhost:3000/usuario/obtener?offset=5&limit=10
+
 
 ### editar
 PUT http://localhost:3000/usuario/actualizar/1

@@ -6,6 +6,7 @@ export const Modal = ({
   if (!abierto) return null
 
   const sizes = {
+    xs: "max-w-sm",
     sm: "max-w-md",
     md: "max-w-lg",
     lg: "max-w-2xl",

@@ -1,19 +1,37 @@
+import { fn, col } from 'sequelize'
 export class UsuarioServicio {
   constructor ({ modelUsuario, modelVenta }) {
     this.modelUsuario = modelUsuario
     this.modelVenta = modelVenta
   }
 
-  async obtenerUsuarios () {
-    try {
-      const dataUsuario = await this.modelUsuario.findAll()
+  async obtenerUsuarios (offset, limit, filtroRol) {
+    const where = {}
+    if (filtroRol) {
+      where.rol = filtroRol
+    }
 
-      if (!dataUsuario || dataUsuario.length === 0) {
+    try {
+      const dataUsuario = await this.modelUsuario.findAll({
+        offset: Number(offset) || 0,
+        limit: Number(limit) || 5,
+        order: [['id', 'DESC']],
+        where
+      })
+
+      if (!dataUsuario) {
         return { error: 'Lista vacia' }
       }
+      if (dataUsuario.length === 0) {
+        return []
+      }
+
       const DtoUsuario = dataUsuario.map((data) => {
-        const hora = new Date(data.createdAt).toISOString().substring(11, 16)
-        const fecha = data.createdAt.toISOString().split('T')[0]
+        const fecha = data.createdAt.toLocaleDateString('es-BO')
+        const hora = data.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
         return {
           id: data.id,
           nombre: data.nombre,
@@ -75,13 +93,22 @@ export class UsuarioServicio {
   async agregarUsuario ({ datos }) {
     const { nombre, password, usuario, rol } = datos
     try {
+      const existeUsuario = await this.modelUsuario.findOne({
+        where: { usuario }
+      })
+      if (existeUsuario) {
+        return { error: 'El nombre de usuario ya está en uso' }
+      }
       const agregar = await this.modelUsuario.create({
         nombre, password, usuario, rol
       })
       const nuevoUsuario = await this.modelUsuario.findByPk(agregar.id)
 
-      const hora = new Date(nuevoUsuario.createdAt).toISOString().substring(11, 16)
-      const fecha = nuevoUsuario.createdAt.toISOString().split('T')[0]
+      const fecha = nuevoUsuario.createdAt.toLocaleDateString('es-BO')
+      const hora = nuevoUsuario.createdAt.toLocaleTimeString('es-BO', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
       return {
         id: nuevoUsuario.id,
         nombre: nuevoUsuario.nombre,
@@ -107,8 +134,8 @@ export class UsuarioServicio {
       if (usuario.rol.toLowerCase() === 'mesero') {
         const ventasActivas = await this.modelVenta.count({
           where: {
-            meseroId: id,
-            estado: 'activa' // Ajusta esto según cómo defines una venta activa
+            usuarioId: id,
+            estado: 'PENDIENTE' // no se desactivara si tiene ventas pendientes
           }
         })
         if (ventasActivas > 0) {
@@ -123,6 +150,44 @@ export class UsuarioServicio {
       return { mensaje: 'Estado de usuario actualizado', usuario }
     } catch (error) {
       console.error('Error al cambiar estado de usuario:', error)
+      return { error: error.message }
+    }
+  }
+
+  async obtenerTotalUsuarios () {
+    try {
+      const total = await this.modelUsuario.findAll(
+        {
+          attributes: [
+            'rol',
+            [fn('COUNT', col('id')), 'cantidad']
+          ],
+          group: ['rol'],
+          order: [['rol', 'ASC']]
+        }
+      )
+      return total
+    } catch (error) {
+      console.error('Error al obtener total de usuarios:', error)
+      return { error: error.message }
+    }
+  }
+
+  async eliminarUsuario ({ id }) {
+    try {
+      const tieneVentas = await this.modelVenta.count({
+        where: { usuarioId: id }
+      })
+      if (tieneVentas > 0) {
+        return { error: 'No se puede eliminar el usuario porque tiene ventas realizadas.' }
+      }
+
+      await this.modelUsuario.destroy({
+        where: { id }
+      })
+      return { message: 'Usuario eliminado correctamente.' }
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error)
       return { error: error.message }
     }
   }

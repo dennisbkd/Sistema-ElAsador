@@ -1,19 +1,36 @@
-import { useCambiarEstadoUsuario, useUsuarios } from "./useUsuarioQuery"
+import { useModal } from "../../../hooks/useModal"
+import { useCambiarEstadoUsuario, useEliminarUsuario, useTotalUsuarios, useUsuarios } from "./useUsuarioQuery"
 
 
-export const useUsuarioAdministrador = () => {
-  const { data: usuarios = [], error, isLoading } = useUsuarios()
+export const useUsuarioAdministrador = ({ rol }) => {
+  const modalEliminar = useModal()
+  const { usuarioQuery, siguiente, anterior, filtrarRol, page } = useUsuarios({ rol })
+  const { data: totalUsuarios, isLoading: isLoadingTotal, error: errorTotal } = useTotalUsuarios()
+  const eliminarUsuarioMutation = useEliminarUsuario()
   const estadoUsuarioMutation = useCambiarEstadoUsuario()
+
+  const eliminarUsuario = (id) => {
+    eliminarUsuarioMutation.mutate(id)
+  }
 
   const cambiarEstadoUsuario = (id) => {
     estadoUsuarioMutation.mutate(id)
   }
 
   return {
-    usuarios,
-    error,
-    isLoading,
+    usuarios: usuarioQuery?.data || [],
+    page,
+    error: usuarioQuery.error,
+    isLoading: usuarioQuery.isLoading,
+    totalUsuarios: totalUsuarios || [],
+    errorTotal,
+    isLoadingTotal,
     cambiarEstadoUsuario,
-    estaCambiandoEstado: estadoUsuarioMutation.isPending
+    siguiente,
+    anterior,
+    eliminarUsuario,
+    filtrarRol,
+    modalEliminar,
+    estaCambiandoEstado: estadoUsuarioMutation.isPending || eliminarUsuarioMutation.isPending
   }
 }

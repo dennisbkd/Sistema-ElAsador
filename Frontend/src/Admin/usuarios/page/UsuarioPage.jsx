@@ -2,6 +2,9 @@
 
 
 
+
+
+
 import { Modal } from "../../../components/modal/Modal"
 import { Plus, Save, UserIcon } from "lucide-react"
 import { useFormUsuario } from "../hooks/useFormUsuario"
@@ -12,22 +15,53 @@ import { useUsuarioAdministrador } from "../hooks/useUsuarioAdministrador"
 import { roles } from "../../../assets/rolesOpciones"
 import { SpinnerCargando } from "../../../ui/spinner/SpinnerCargando"
 import { ErrorMessage } from "../../../ui/ErrorMessage"
+import { CardContador } from "../../../components/CardContador"
+import { useState } from "react"
+import { ModalEliminar } from "../../../components/modal/ModalEliminar"
+import { SelectOption } from "../../../components/SelectOption"
+import { CardContadorSkeleton } from "../../../components/CardContadorSkeleton"
 
 
 
 export const UsuarioPage = () => {
-
-  const { configuracionFormulario, guardarUsuario, modal } = useFormUsuario()
-  const { usuarios, error, isLoading, cambiarEstadoUsuario, estaCambiandoEstado } = useUsuarioAdministrador()
-
+  const [filtroRol, setFiltroRol] = useState('')
+  const { configuracionFormulario, guardarUsuario, modal, usuarioEsquema } = useFormUsuario()
+  const {
+    usuarios,
+    error,
+    isLoading,
+    estaCambiandoEstado,
+    page,
+    totalUsuarios,
+    errorTotal,
+    isLoadingTotal,
+    modalEliminar,
+    eliminarUsuario,
+    cambiarEstadoUsuario,
+    siguiente,
+    anterior,
+  } = useUsuarioAdministrador({ rol: filtroRol })
 
   const form = useAppForm({
     defaultValues: configuracionFormulario.defaultValues,
+    validators: {
+      onChange: usuarioEsquema,
+    },
     onSubmit: ({ value }) => {
       guardarUsuario(value)
-      modal.cerrar()
+      cerrarModal()
     }
   })
+  const cerrarModal = () => {
+    modal.cerrar()
+    form.reset()
+  }
+
+  const eliminarUsuarioConfirmado = () => {
+    eliminarUsuario(modalEliminar.data)
+    modalEliminar.cerrar()
+  }
+
 
   if (isLoading) {
     return (
@@ -55,14 +89,33 @@ export const UsuarioPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 ">
       <div className="max-w-7xl mx-auto">
-
-        <div className="flex justify-end mb-2">
+        <div className="grid gap-4 grid-cols-3 mb-3 ">
+          {isLoadingTotal ? (
+            <CardContadorSkeleton />
+          ) : (totalUsuarios.map(({ rol, cantidad }) => (
+            <CardContador
+              key={rol}
+              cantidad={cantidad}
+              titulo={rol}
+            />)
+          ))}
+        </div>
+        <div className="flex justify-between mb-2">
+          <div className="flex items-center">
+            <span className="font-semibold mr-2">Filtrar por rol: </span>
+            <SelectOption
+              props={{ className: 'w-38' }}
+              value={filtroRol}
+              placeholder="Filtrar por rol"
+              options={[{ value: '', label: 'Todos' }, ...roles]}
+              selectValue={setFiltroRol}
+            />
+          </div>
           <BotonAccion
             onClick={() => modal.abrir()}
             icon={Plus}
             label="Nuevo Usuario"
             variant="primary"
-
           />
         </div>
 
@@ -70,12 +123,23 @@ export const UsuarioPage = () => {
           usuarios={usuarios}
           editar={modal.abrir}
           cambiarEstado={cambiarEstadoUsuario}
+          eliminar={modalEliminar.abrir}
           isLoading={estaCambiandoEstado}
+          page={page}
+          anterior={anterior}
+          siguiente={siguiente}
+        />
+
+        <ModalEliminar
+          abrir={modalEliminar.isOpen}
+          tipo={`usuario ID#${modalEliminar.data}`}
+          cerrar={modalEliminar.cerrar}
+          confirmarEliminar={eliminarUsuarioConfirmado}
         />
 
         <Modal
           abierto={modal.isOpen}
-          cambiarEstado={modal.cerrar}
+          cambiarEstado={cerrarModal}
           titulo={modal.data ? "Editar Usuario" : "Crear Usuario"}
         >
           <form
@@ -102,7 +166,13 @@ export const UsuarioPage = () => {
             />
             <form.AppForm >
               <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
-                <form.BotonSubmit type="button" variant="secondary" onClick={modal.cerrar}>Cancelar</form.BotonSubmit>
+                <button
+                  type="button"
+                  onClick={cerrarModal}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancelar
+                </button>
                 <form.BotonSubmit icon={Save}>Guardar</form.BotonSubmit>
               </div>
             </form.AppForm>
