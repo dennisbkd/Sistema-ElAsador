@@ -9,6 +9,8 @@ export const rutaUsuario = ({ usuarioServicio }) => {
   rutas.put('/actualizar/:id', controladorUsuario.editarUsuario)
   rutas.post('/agregar', controladorUsuario.agregarUsuario)
   rutas.put('/cambiar-estado/:id', controladorUsuario.cambiarEstadoUsuario)
+  rutas.get('/total-usuarios', controladorUsuario.obtenerTotalUsuarios)
+  rutas.delete('/eliminar/:id', controladorUsuario.eliminarUsuario)
 
   return rutas
 }
