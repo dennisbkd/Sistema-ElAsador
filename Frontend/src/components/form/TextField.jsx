@@ -1,4 +1,5 @@
 import { useFieldContext } from "."
+import { FieldErrors } from "./FieldErrors"
 
 
 export const TextField = ({ label, type = "text", icon: Icon, placeholder = "" }) => {
@@ -21,11 +22,9 @@ export const TextField = ({ label, type = "text", icon: Icon, placeholder = "" }
           className="border rounded px-2 py-1 w-full"
         />
       </div>
-      {field.state.meta.errors?.length > 0 && (
-        <p className="text-red-500 text-sm">
-          {field.state.meta.errors.join(", ")}
-        </p>
-      )}
+      <FieldErrors
+        meta={field.state.meta}
+      />
     </div>
   )
 }

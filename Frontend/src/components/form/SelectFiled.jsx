@@ -2,6 +2,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useRef, useEffect } from 'react';
 import { useFieldContext } from '.';
+import { FieldErrors } from './FieldErrors';
 
 export const SelectField = ({ label, options = [], placeholder = "Seleccionar..." }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,21 +96,9 @@ export const SelectField = ({ label, options = [], placeholder = "Seleccionar...
       </AnimatePresence>
 
       {/* Error Message */}
-      <AnimatePresence>
-        {field.state.meta.errors?.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="mt-1"
-          >
-            <p className="text-sm text-red-600">
-              {field.state.meta.errors.join(', ')}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <FieldErrors
+        meta={field.state.meta}
+      />
     </div>
   );
 };
