@@ -131,6 +131,7 @@ export const UsuarioPage = () => {
         />
 
         <ModalEliminar
+          isLoading={estaCambiandoEstado}
           abrir={modalEliminar.isOpen}
           tipo={`usuario ID#${modalEliminar.data}`}
           cerrar={modalEliminar.cerrar}
