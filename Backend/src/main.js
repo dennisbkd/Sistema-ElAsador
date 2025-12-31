@@ -5,8 +5,9 @@ import cors from 'cors'
 import { rutaUsuario } from './router/usuario.js'
 import { rutaVentas } from './router/ventas.js'
 import { rutaStock } from './router/stock.js'
+import { rutaCategoria } from './router/categoria.js'
 
-export const App = ({ usuarioServicio, ventaServicio, stockServicio }) => {
+export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio }) => {
   const app = express()
   const port = 3000
 
@@ -23,6 +24,7 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio }) => {
   app.use('/usuario', rutaUsuario({ usuarioServicio }))
   app.use('/venta', rutaVentas({ ventaServicio }))
   app.use('/stock', rutaStock({ stockServicio }))
+  app.use('/categoria', rutaCategoria({ categoriaServicio }))
 
   app.listen(port, () => {
     console.log('Servidor activo en el puerto:', port)
