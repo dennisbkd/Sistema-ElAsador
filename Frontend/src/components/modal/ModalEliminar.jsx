@@ -2,7 +2,7 @@ import { AlertTriangle, X, Trash2 } from "lucide-react"
 import { BotonAccion } from "../../ui/boton/BotonAccion"
 import { Modal } from "./Modal"
 
-export const ModalEliminar = ({ abrir, cerrar, confirmarEliminar, tipo, nombre }) => {
+export const ModalEliminar = ({ abrir, cerrar, confirmarEliminar, tipo, nombre, isLoading }) => {
   return (
     <Modal size="xs" abierto={abrir} cambiarEstado={cerrar} titulo={`Eliminar ${tipo}`}>
       <div className="flex items-center gap-3 p-4 bg-red-50 rounded-md">
@@ -21,6 +21,7 @@ export const ModalEliminar = ({ abrir, cerrar, confirmarEliminar, tipo, nombre }
         />
 
         <BotonAccion
+          isLoading={isLoading}
           onClick={confirmarEliminar}
           icon={Trash2}
           label="Eliminar"

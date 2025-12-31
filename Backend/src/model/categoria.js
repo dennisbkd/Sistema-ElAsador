@@ -13,8 +13,13 @@ export const Categoria = sequelize.define('Categoria',
       allowNull: false
     },
     tipo: {
-      type: DataTypes.ENUM('COMIDA', 'BEBIDA'),
+      type: DataTypes.STRING(50),
       allowNull: false
+    },
+    icono: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      defaultValue: 'Folder'
     }
   }
   , {

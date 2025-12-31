@@ -1,5 +1,6 @@
 import { App } from './main.js'
 import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
+import { CategoriaServicio } from './services/categoria.js'
 import { StockServicio } from './services/stock.js'
 
 import { UsuarioServicio } from './services/usuario.js'
@@ -22,4 +23,6 @@ const stockServicio = new StockServicio({
   modelMovimientoS: MovimientoStock
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio })
+const categoriaServicio = new CategoriaServicio({ modeloCategoria: Categoria, modeloProducto: Producto })
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio })
