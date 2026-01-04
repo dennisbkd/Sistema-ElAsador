@@ -8,6 +8,10 @@ import { PuntoVenta } from "./Admin/punto_de_Venta/page/PuntoVenta";
 import { ProductoProvider } from "./Admin/punto_de_Venta/context/productoProvider";
 import { CategoriaPage } from "./Admin/gestion-items/categoria/page/CategoriaPage";
 import { CategoriaLayout } from "./Admin/gestion-items/categoria/layout/CategoriaLayout";
+import { ProductoPage } from "./Admin/gestion-items/producto/page/ProductoPage";
+import { ProductoLayout } from "./Admin/gestion-items/producto/layouts/ProductoLayout";
+import { NuevoProductoPage } from "./Admin/gestion-items/producto/page/NuevoProductoPage";
+import { EditarProductoPage } from "./Admin/gestion-items/producto/page/EditarProductoPage";
 
 export const AppRouter = () => {
   return (
@@ -24,6 +28,11 @@ export const AppRouter = () => {
           <Route path="listar" element={<PuntoVenta />} />
         </Route>
         <Route path="punto-de-venta" element={<PuntoVentaUI />} />
+        <Route path="productos" element={<ProductoLayout />} >
+          <Route index element={<ProductoPage />} />
+          <Route path="nuevo" element={<NuevoProductoPage />} />
+          <Route path="editar/:productoId" element={<EditarProductoPage />} />
+        </Route>
         <Route path="categoria" element={<CategoriaLayout />} >
           <Route index element={<CategoriaPage />} />
         </Route>
