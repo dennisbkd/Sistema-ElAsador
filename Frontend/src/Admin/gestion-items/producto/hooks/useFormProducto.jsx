@@ -9,11 +9,9 @@ export const useFormProducto = () => {
 
   const guardarProducto = (datos) => {
     crearProductoMutation.mutate({ data: datos })
-    console.log('Datos del producto a guardar:', datos)
   }
   const editarProducto = (datos, id) => {
     const data = construirFormDataProducto(datos)
-    console.log('Datos convertidos a FormData para editar:', datos)
     editarProductoMutation.mutate({ data, id })
   }
 
