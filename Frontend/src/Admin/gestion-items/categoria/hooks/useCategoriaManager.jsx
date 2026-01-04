@@ -1,9 +1,9 @@
 import { useModal } from "../../../../hooks/useModal"
 import { useCategoriaEliminar, useCategoriaQuery } from "./useCategoriaQuery"
 
-export const useCategoriaManager = ({ filtro }) => {
+export const useCategoriaManager = ({ filtro, limit }) => {
   const modalEliminar = useModal()
-  const { categoriaQuery, page, siguiente, anterior } = useCategoriaQuery({ filtro })
+  const { categoriaQuery, page, siguiente, anterior } = useCategoriaQuery({ filtro, limit })
   const eliminarCategoriaMutation = useCategoriaEliminar()
 
   const eliminarCategoria = (id) => {

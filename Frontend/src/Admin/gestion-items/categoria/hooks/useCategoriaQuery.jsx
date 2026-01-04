@@ -4,11 +4,11 @@ import { crearCategoria, editarCategoria, eliminarCategoria, obtenerCategorias }
 import toast from "react-hot-toast"
 
 
-export const useCategoriaQuery = ({ filtro }) => {
+export const useCategoriaQuery = ({ filtro, limit }) => {
   const [page, setPage] = useState(1)
   const categoriaQuery = useQuery({
-    queryKey: ['categorias', { page, filtro }],
-    queryFn: () => obtenerCategorias({ page, filtro }),
+    queryKey: ['categorias', { page, filtro, limit }],
+    queryFn: () => obtenerCategorias({ page, filtro, limit }),
     staleTime: 1000 * 60 * 5, // 5 minutos
   })
   const siguiente = () => {
@@ -57,7 +57,7 @@ export const useCategoriaEditar = () => {
     mutationFn: ({ id, data }) => editarCategoria({ id, data }),
     onSuccess: () => {
       toast.success('Categoria editada con éxito')
-      queryClient.invalidateQueries({ queryKey: ['categorias'] })
+      queryClient.invalidateQueries({ queryKey: ['categorias'], exact: false })
     }
   })
 }

@@ -1,7 +1,6 @@
 import { instancia } from "../../../../config/axios"
 
-export const obtenerCategorias = async({ page = 1, filtro})=>{
-  const limit = 5
+export const obtenerCategorias = async({ page = 1, filtro, limit = 5 })=>{
   const offset = (page-1) * limit
   const res = await instancia.get(`/categoria/obtener?offset=${offset}&limit=${limit}&filtroTipo=${filtro}`)
   return res.data 
