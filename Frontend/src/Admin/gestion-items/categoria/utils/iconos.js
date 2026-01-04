@@ -12,5 +12,6 @@ export const iconosCategoria = [
   'Candy',
   'Salad',
   'UtensilsCrossed',
-  'Wine'
+  'Wine',
+  'BottleWine'
 ]
