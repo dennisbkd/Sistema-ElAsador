@@ -26,7 +26,7 @@ export const SelectField = ({ label, options = [], placeholder = "Seleccionar...
     setIsOpen(false);
   };
 
-  const selectedOption = options.find(opt => opt.value.toLowerCase() === field.state.value.toLowerCase());
+  const selectedOption = options.find(opt => opt.value.toLowerCase() === field.state.value?.toLowerCase());
 
   return (
     <div ref={selectRef} className="relative inset-0 z-50">

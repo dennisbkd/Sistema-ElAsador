@@ -18,11 +18,11 @@ Usuario.hasMany(MovimientoStock, { foreignKey: 'usuarioId' })
 MovimientoStock.belongsTo(Usuario, { foreignKey: 'usuarioId' })
 
 // relacion entre producto y categoria
-Categoria.hasMany(Producto, { foreignKey: 'categoriaId' })
-Producto.belongsTo(Categoria, { foreignKey: 'categoriaId' })
+Categoria.hasMany(Producto, { foreignKey: 'categoriaId', as: 'productos' })
+Producto.belongsTo(Categoria, { foreignKey: 'categoriaId', as: 'categoria' })
 
 // 3. RELACIONES PRODUCTO
-Producto.hasOne(StockPlato, { foreignKey: 'productoId' })
+Producto.hasOne(StockPlato, { foreignKey: 'productoId', onDelete: 'CASCADE', hooks: true })
 StockPlato.belongsTo(Producto, { foreignKey: 'productoId' })
 
 Producto.hasMany(DetalleVenta, { foreignKey: 'productoId' })

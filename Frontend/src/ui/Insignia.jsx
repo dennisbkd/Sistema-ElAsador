@@ -1,5 +1,5 @@
 
-export const Insignia = ({ texto, color, icon: Icon }) => {
+export const Insignia = ({ texto, color, icon: Icon, className = '', size = 14 }) => {
 
   const colorClases = {
     purple: 'bg-purple-100 text-purple-800',
@@ -11,8 +11,8 @@ export const Insignia = ({ texto, color, icon: Icon }) => {
   }
 
   return (
-    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClases[color]}`}>
-      {Icon && <Icon className="mr-1" size={14} />}
+    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${colorClases[color]} ${className}`}>
+      {Icon && <Icon className="mr-1" size={size} />}
       {texto}
     </span>
   )
