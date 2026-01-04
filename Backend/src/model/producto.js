@@ -26,6 +26,10 @@ export const Producto = sequelize.define('Producto', {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false
   },
+  imagen: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  },
   esPreparado: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
