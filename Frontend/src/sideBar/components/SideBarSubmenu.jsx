@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { SubmenuItem } from './SubmenuItem'
 
-export const SidebarSubMenu = ({
+export const SidebarSubmenu = ({
   subItems, estaExpandido, cerrarMobile, location
 }) => {
 
