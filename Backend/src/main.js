@@ -1,13 +1,16 @@
 import express, { json } from 'express'
 import path from 'node:path'
+import { createServer } from 'node:http'
+import cors from 'cors'
+
 import { Conexiondatabase } from './database/conexion.js'
 
-import cors from 'cors'
 import { rutaUsuario } from './router/usuario.js'
 import { rutaVentas } from './router/ventas.js'
 import { rutaStock } from './router/stock.js'
 import { rutaCategoria } from './router/categoria.js'
 import { rutaProducto } from './router/producto.js'
+import { SocketConfig } from './config/socket.js'
 
 export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio }) => {
   const app = express()
@@ -29,7 +32,11 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaSe
   app.use('/categoria', rutaCategoria({ categoriaServicio }))
   app.use('/producto', rutaProducto({ productoServicio }))
 
-  app.listen(port, () => {
+  const server = createServer(app)
+  const io = SocketConfig(server)
+
+  app.set('io', io)
+  server.listen(port, () => {
     console.log('Servidor activo en el puerto:', port)
   })
 }
