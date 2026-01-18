@@ -13,7 +13,8 @@ const ventaServicio = new VentaServicio(
     modeloVenta: Venta,
     modeloDetalle: DetalleVenta,
     modeloProducto: Producto,
-    modeloCategoria: Categoria
+    modeloCategoria: Categoria,
+    modeloStockPlato: StockPlato
   }
 )
 const stockServicio = new StockServicio({

@@ -1,10 +1,10 @@
-import { BotonMenu } from "../../../../components/BotonMenu"
+import { BotonMenu } from '../../../../components/BotonMenu';
 import { BotonMenuSkeleton } from "../../../../components/BotonMenuSkeleton"
 
 
 export const Menu = ({ categorias, categoriaId, setCategoriaId, isLoading }) => {
   return (
-    <div className='flex flex-wrap gap-4 '>
+    <div className='flex text-nowrap gap-4 '>
       {isLoading ? (
         Array.from({ length: 5 }).map((_, index) => (
           <BotonMenuSkeleton key={index} index={index} />

@@ -18,7 +18,7 @@ export class ProductoControlador {
     this.productoServicio.obtenerProductos({
       offset: req.query.offset,
       limit: req.query.limit,
-      filtroCategoria: req.query.filtroCategoria
+      filtros: { categoriaId: req.query.filtroCategoria, activo: req.query.filtroActivo }
     }))
 
   crearProducto = this.#manejarRespuesta((req) =>

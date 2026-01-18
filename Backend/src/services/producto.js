@@ -10,10 +10,14 @@ export class ProductoServicio {
   }
 
   // obtener productos
-  async obtenerProductos ({ offset, limit, filtroCategoria }) {
+  async obtenerProductos ({ offset, limit, filtros }) {
     const where = {}
-    if (filtroCategoria) {
-      where.categoriaId = filtroCategoria
+    if (filtros.categoriaId) {
+      where.categoriaId = filtros.categoriaId
+    }
+
+    if (filtros.activo !== 'undefined' && filtros.activo !== undefined && filtros.activo !== 'null') {
+      where.activo = filtros.activo === 'true'
     }
     try {
       const dataProducto = await this.modeloProducto.findAll({
