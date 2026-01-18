@@ -1,8 +1,7 @@
 import express, { json } from 'express'
 import path from 'node:path'
 import { createServer } from 'node:http'
-import cors from 'cors'
-
+import { corsMiddleware } from './config/corsUrl.js'
 import { Conexiondatabase } from './database/conexion.js'
 
 import { rutaUsuario } from './router/usuario.js'
@@ -16,11 +15,7 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaSe
   const app = express()
   const port = 3000
 
-  app.use(cors({
-    origin: ['http://localhost:5173', 'http://192.168.1.9:5173'],
-    credentials: true
-  }
-  ))
+  app.use(corsMiddleware())
   app.use(json())
 
   Conexiondatabase()
