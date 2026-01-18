@@ -11,7 +11,7 @@ export const Venta = sequelize.define('Venta',
     codigo: {
       type: DataTypes.STRING(50),
       unique: true,
-      allowNull: false
+      allowNull: true
     },
     nroMesa: {
       type: DataTypes.INTEGER,

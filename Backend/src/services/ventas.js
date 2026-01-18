@@ -1,13 +1,18 @@
 import { Op } from 'sequelize'
+import { sequelize } from '../model/index.js'
+import { ProductoSinStockError, StockInsuficienteError, VentaSearchError } from '../errors/index.js'
+import { horaFinal, horaInicial } from '../utils/tiempo.js'
+
 export class VentaServicio {
-  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria }) {
+  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato }) {
     this.modeloVenta = modeloVenta
     this.modeloDetalle = modeloDetalle
     this.modeloProducto = modeloProducto
     this.modeloCategoria = modeloCategoria
+    this.modeloStock = modeloStockPlato
   }
 
-  ventasDelDiaDetallados = async () => {
+  async ventasDelDiaDetallados () {
     try {
       const ventasPorTipoProducto = await this.modeloDetalle.findAll({
         attributes: [
@@ -28,7 +33,8 @@ export class VentaServicio {
             include: [
               {
                 model: this.modeloCategoria,
-                attributes: ['nombre', 'id']
+                attributes: ['nombre', 'id'],
+                as: 'categoria'
               }
             ]
           }
@@ -48,17 +54,19 @@ export class VentaServicio {
     }
   }
 
-  ventasDelDiaDetallado = async () => {
+  async ventasDelDiaDetallado ({ filtroEstado }) {
+    const where = filtroEstado && filtroEstado !== 'TODOS' ? { estado: filtroEstado } : {}
     try {
       // 1. Primero obtener las ventas del día
       const ventasHoy = await this.modeloVenta.findAll({
         where: {
           createdAt: {
             [Op.between]: [
-              new Date(new Date().setHours(0, 0, 0, 0)), // Inicio del día
-              new Date(new Date().setHours(23, 59, 59, 999)) // Fin del día
+              horaInicial, // Inicio del día
+              horaFinal // Fin del día
             ]
-          }
+          },
+          ...where
         },
         include: [
           {
@@ -76,19 +84,28 @@ export class VentaServicio {
       if (!ventasHoy) return { error: 'No se realizaron ventas' }
 
       // 2. Formatear los datos manualmente (más control)
-      const ventasFormateadas = ventasHoy.map(venta => ({
-        codigo: venta.codigo,
-        nroMesa: venta.nroMesa,
-        clienteNombre: venta.clienteNombre ?? '',
-        total: venta.total,
-        estado: venta.estado,
-        total_items: venta.DetallePedidos.length ?? 0,
-        productos: venta.DetallePedidos.map(dv =>
-    `${dv.cantidad}x ${dv.Producto.nombre}`
-        ).join(', ') ?? '',
-        createdAt: venta.createdAt
-      }))
-
+      const ventasFormateadas = ventasHoy.map(venta => {
+        const fecha = venta.createdAt.toLocaleDateString('es-BO')
+        const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+        return {
+          id: venta.id,
+          codigo: venta.codigo,
+          nroMesa: venta.nroMesa,
+          clienteNombre: venta.clienteNombre ?? '',
+          total: venta.total,
+          estado: venta.estado,
+          total_items: venta.DetallePedidos.length ?? 0,
+          productos: venta.DetallePedidos.map(dv =>
+          `${dv.cantidad}x ${dv.Producto.nombre}`
+          ).join(', ') ?? '',
+          observaciones: venta.observaciones ?? '',
+          fecha,
+          hora
+        }
+      })
       return ventasFormateadas
     } catch (error) {
       return { error: error.message + 'ss' }
@@ -128,5 +145,172 @@ export class VentaServicio {
           : '0.00'
       }
     ))
+  }
+
+  async crearVenta ({ body, usuarioId, io }) {
+    const { clienteNombre, nroMesa, estado, detalle, tipo, observaciones, fechaReserva } = body
+    const transaction = await sequelize.transaction()
+    try {
+      const venta = await this.modeloVenta.create({
+        clienteNombre,
+        nroMesa,
+        estado,
+        tipo,
+        observaciones,
+        fechaReserva,
+        usuarioId
+      }, { transaction })
+
+      await this.validarYActualizarStock(detalle, transaction)
+      // generamos el detalle de la venta
+      const { detalleVentaMap, total } = await this.generarDetalleVenta(detalle, venta.id, transaction)
+      // guardamos el detalle de la venta
+      await this.modeloDetalle.bulkCreate(await Promise.all(detalleVentaMap), { transaction })
+      const codigo = this.generarCodigoVenta(venta.id)
+      await venta.update({ total, codigo }, { transaction })
+      await transaction.commit()
+      io.emit('ventaCreada', { ventaId: venta.id })
+    } catch (error) {
+      await transaction.rollback()
+      throw error
+    }
+  }
+
+  async generarDetalleVenta (detalle, ventaId, transaction) {
+    const productosBd = await this.modeloProducto.findAll({
+      where: { id: detalle.map(producto => producto.productoId) },
+      transaction
+    })
+
+    let total = 0
+
+    const detalleVentaMap = detalle.map(item => {
+      const producto = productosBd.find(p => p.id === item.productoId)
+      if (!producto) {
+        throw new Error(`Producto con ID ${item.productoId} no encontrado`)
+      }
+      const subtotal = producto.precio * item.cantidad
+      total += subtotal
+
+      return {
+        ventaId,
+        productoId: item.productoId,
+        cantidad: item.cantidad,
+        subtotal,
+        precioUnitario: producto.precio,
+        observaciones: item.observaciones || ''
+      }
+    })
+    return { detalleVentaMap, total }
+  }
+
+  generarCodigoVenta (id) {
+    const fecha = new Date()
+    // Venta-dia-mes-anio-numeroDeVentasHoy
+    const day = fecha.getDate().toString()
+    const year = fecha.getFullYear().toString().slice(-2)
+    const month = (fecha.getMonth() + 1).toString()
+    return `VE-${day}${month}${year}-${id.toString().padStart(4, '0') || '0001'}`
+  }
+
+  async validarYActualizarStock (detalle, transaction) {
+    detalle.sort((a, b) => a.productoId - b.productoId)
+    for (const item of detalle) {
+      const stock = await this.modeloStock.findOne({
+        where: { productoId: item.productoId },
+        lock: transaction.LOCK.UPDATE,
+        include: [{
+          model: this.modeloProducto,
+          attributes: ['nombre']
+        }],
+        transaction
+      })
+      if (!stock) {
+        throw new ProductoSinStockError(item.productoId)
+      }
+      if (stock.cantidad < item.cantidad) {
+        throw new StockInsuficienteError(stock.Producto?.nombre || `Producto ID ${item.productoId}`, stock.cantidad, item.cantidad
+        )
+      }
+      await stock.decrement('cantidad', { by: item.cantidad, transaction })
+    }
+  }
+
+  async agregarProductoAVenta ({ body, ventaId }) {
+    const transaction = await sequelize.transaction()
+    const { detalle } = body
+    try {
+      const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
+      if (!venta) {
+        await transaction.rollback()
+        throw new VentaSearchError(`Venta con ID ${ventaId} no encontrada`)
+      }
+      await this.validarYActualizarStock(detalle, transaction)
+
+      const { detalleVentaMap, total } = await this.generarDetalleVenta(detalle, venta.id, transaction)
+
+      await this.modeloDetalle.bulkCreate(await Promise.all(detalleVentaMap), { transaction })
+      await venta.increment('total', { by: total, transaction })
+      await transaction.commit()
+      return { message: 'Producto(s) agregado(s) a la venta con exito', ventaId: venta.id }
+    } catch (error) {
+      await transaction.rollback()
+      throw error
+    }
+  }
+
+  async obtenerVentaId ({ ventaId }) {
+    try {
+      const venta = await this.modeloVenta.findByPk(ventaId, {
+        include: [{
+          model: this.modeloDetalle,
+          include: [{
+            model: this.modeloProducto,
+            attributes: ['nombre']
+          }]
+        }]
+      })
+      if (!venta) {
+        throw new VentaSearchError(`Venta con ID ${ventaId} no encontrada`)
+      }
+      const fecha = venta.createdAt.toLocaleDateString('es-BO')
+      const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      const ventasFormateadas = {
+        codigo: venta.codigo,
+        nroMesa: venta.nroMesa,
+        clienteNombre: venta.clienteNombre ?? '',
+        total: venta.total,
+        estado: venta.estado,
+        total_items: venta.DetallePedidos.length ?? 0,
+        productos: Object.values(dataAgrupada(venta.DetallePedidos)),
+        observaciones: venta.observaciones ?? '',
+        fecha,
+        hora
+      }
+      function dataAgrupada (detalle) {
+        return detalle.reduce((acc, item) => {
+          const id = item.productoId
+          if (!acc[id]) {
+            acc[id] = {
+              productoId: id,
+              nombre: item.Producto?.nombre,
+              cantidad: 0,
+              subtotal: 0,
+              precioUnitario: Number(item.precioUnitario)
+            }
+          }
+          acc[id].cantidad += item.cantidad
+          acc[id].subtotal += Number(item.subtotal)
+          return acc
+        }, {})
+      }
+
+      return ventasFormateadas
+    } catch (error) {
+      throw new VentaSearchError(error.message)
+    }
   }
 }
