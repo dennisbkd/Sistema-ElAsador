@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { NavLink } from 'react-router'
-import { SidebarSubMenu } from "./SideBarSubMenu";
+import { SidebarSubmenu } from "./SideBarSubmenu";
 
 export const MenuItem = ({
   item,
@@ -90,7 +90,7 @@ export const MenuItem = ({
           </NavLink>
         )}
       {tieneSub && item.subItems && item.key && (
-        <SidebarSubMenu
+        <SidebarSubmenu
           subItems={item.subItems}
           estaExpandido={estaSubMenuAbierto && estaExpandido}
           cerrarMobile={cerrarMobile}
