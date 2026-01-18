@@ -7,6 +7,7 @@ export const BotonMenu = ({ activo = false, onSelect, valor, index }) => {
   const Icono = Icons[valor.icono] ?? Icons.Square;
   return (
     <motion.button
+      type="button"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}

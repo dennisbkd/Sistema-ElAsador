@@ -19,7 +19,7 @@ export  const menuItems = [
       title: "Gestión Producto", icon: Archive, key: "productos",
       subItems: [
         { title: "Productos", path: "/home/productos", icon: Archive },
-        { title: "Categorías", path: "/home/categorias", icon: Tag }
+        { title: "Categorías", path: "/home/categoria", icon: Tag }
       ]
     }
   ]
