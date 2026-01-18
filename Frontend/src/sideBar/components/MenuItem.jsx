@@ -1,7 +1,7 @@
 import { ChevronDown } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { NavLink } from 'react-router'
-import { SidebarSubMenu } from './SidebarSubMenu'
+import { SidebarSubMenu } from "./SideBarSubMenu";
 
 export const MenuItem = ({
   item,
