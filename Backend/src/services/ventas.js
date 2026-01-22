@@ -169,7 +169,15 @@ export class VentaServicio {
       const codigo = this.generarCodigoVenta(venta.id)
       await venta.update({ total, codigo }, { transaction })
       await transaction.commit()
-      io.emit('ventaCreada', { ventaId: venta.id })
+      if (io) {
+        io.emit('ventaCreada', {
+          ventaId: venta.id,
+          codigo,
+          mesa: nroMesa,
+          cliente: clienteNombre,
+          total
+        })
+      }
     } catch (error) {
       await transaction.rollback()
       throw error
@@ -236,7 +244,7 @@ export class VentaServicio {
     }
   }
 
-  async agregarProductoAVenta ({ body, ventaId }) {
+  async agregarProductoAVenta ({ body, ventaId, io }) {
     const transaction = await sequelize.transaction()
     const { detalle } = body
     try {
@@ -252,7 +260,15 @@ export class VentaServicio {
       await this.modeloDetalle.bulkCreate(await Promise.all(detalleVentaMap), { transaction })
       await venta.increment('total', { by: total, transaction })
       await transaction.commit()
-      return { message: 'Producto(s) agregado(s) a la venta con exito', ventaId: venta.id }
+      if (io) {
+        io.emit('productoAgregadoAVenta', {
+          ventaId: venta.id,
+          codigo: venta.codigo,
+          mesa: venta.nroMesa,
+          cliente: venta.clienteNombre,
+          total: venta.total
+        })
+      }
     } catch (error) {
       await transaction.rollback()
       throw error

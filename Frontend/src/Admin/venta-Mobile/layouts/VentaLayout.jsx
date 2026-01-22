@@ -9,6 +9,7 @@ import { SpinnerCargando } from "../../../ui/spinner/SpinnerCargando"
 import { BotonAccion } from "../../../ui/boton/BotonAccion"
 import { useDebonce } from "../../gestion-items/producto/hooks/useDebonce"
 import { ErrorMessage } from "../../../ui/ErrorMessage"
+import { useVentaSocket } from "../hooks/useVentaSocket";
 
 export const VentaLayout = ({
   children,
@@ -21,6 +22,7 @@ export const VentaLayout = ({
   const [nombreBusqueda, setNombreBusqueda] = useState('')
   const nombreDebonce = useDebonce({ value: nombreBusqueda, delay: 300 })
   const [categoriaId, setCategoriaId] = useState(null)
+  const { isConnected } = useVentaSocket()
 
   const {
     productos,
@@ -69,7 +71,10 @@ export const VentaLayout = ({
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{titulo}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{titulo} {isConnected ?
+              <div className="rounded-full h-3 w-3 bg-green-500 inline-block ml-2"></div> :
+              <div className="rounded-full h-3 w-3 bg-red-500 inline-block ml-2"></div>}
+            </h1>
             <p className="text-sm text-gray-600">
               {subtitulo}
             </p>
