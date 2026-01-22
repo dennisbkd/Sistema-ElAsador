@@ -43,7 +43,8 @@ export class ControladorVenta {
 
   agregarProductoAVenta = this.#manejarRespuesta((req) => this.ventaServicio.agregarProductoAVenta({
     body: req.body,
-    ventaId: req.params.id
+    ventaId: req.params.id,
+    io: req.app.get('io')
   }))
 
   obtenerVentaId = this.#manejarRespuesta((req) => this.ventaServicio.obtenerVentaId({

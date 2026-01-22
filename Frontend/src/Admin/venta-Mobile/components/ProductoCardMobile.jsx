@@ -124,7 +124,6 @@ export const ProductoCardMobile = ({ producto, onAgregar, cantidad = 0, observac
                 />
               </div>
               <div className="flex justify-between text-[10px] text-gray-500 mt-0.5">
-                <span>0</span>
                 <span>Alerta: {stockMinimo}</span>
               </div>
             </div>

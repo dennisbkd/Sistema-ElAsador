@@ -83,7 +83,7 @@ export const AgregarProductoOrdenPage = () => {
           <div className="w-10"></div> {/* Spacer para centrar */}
         </div>
       </div>
-      <VentaLayout >
+      <VentaLayout titulo="Agregar Productos">
         {(producto) => (
           <ProductoCardMobile
             actualizarObservacion={actualizarObservacion}
