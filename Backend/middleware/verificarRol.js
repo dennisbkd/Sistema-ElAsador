@@ -3,7 +3,6 @@
 export const verificarRol = (rolesPermitidos) => {
   return (req, res, next) => {
     const usuarioRol = req.usuario.rol
-    console.log('Rol del usuario:', usuarioRol)
     if (usuarioRol.toUpperCase() === 'ADMINISTRADOR') {
       next()
     } else if (rolesPermitidos.includes(usuarioRol)) {
