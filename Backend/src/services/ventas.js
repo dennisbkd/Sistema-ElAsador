@@ -54,8 +54,11 @@ export class VentaServicio {
     }
   }
 
-  async ventasDelDiaDetallado ({ filtroEstado }) {
+  async ventasDelDiaDetallado ({ filtroEstado, usuarioId }) {
     const where = filtroEstado && filtroEstado !== 'TODOS' ? { estado: filtroEstado } : {}
+    if (usuarioId) {
+      where.usuarioId = usuarioId
+    }
     try {
       // 1. Primero obtener las ventas del día
       const ventasHoy = await this.modeloVenta.findAll({
@@ -98,9 +101,6 @@ export class VentaServicio {
           total: venta.total,
           estado: venta.estado,
           total_items: venta.DetallePedidos.length ?? 0,
-          productos: venta.DetallePedidos.map(dv =>
-          `${dv.cantidad}x ${dv.Producto.nombre}`
-          ).join(', ') ?? '',
           observaciones: venta.observaciones ?? '',
           fecha,
           hora
@@ -108,7 +108,7 @@ export class VentaServicio {
       })
       return ventasFormateadas
     } catch (error) {
-      return { error: error.message + 'ss' }
+      return { error: error.message }
     }
   }
 

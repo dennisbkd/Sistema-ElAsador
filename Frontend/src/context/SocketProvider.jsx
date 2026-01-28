@@ -6,7 +6,13 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState()
 
   useEffect(() => {
-    const nuevaConexionIo = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000')
+    const token = localStorage.getItem('token') || null
+    const nuevaConexionIo = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000', {
+      auth: {
+        token
+      },
+      autoConnect: !!token
+    })
     setSocket(nuevaConexionIo)
 
     return () => {

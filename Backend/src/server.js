@@ -1,5 +1,7 @@
+import { Token } from './config/token.js'
 import { App } from './main.js'
 import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
+import { AuthServicio } from './services/auth.js'
 import { CategoriaServicio } from './services/categoria.js'
 import { ProductoServicio } from './services/producto.js'
 import { StockServicio } from './services/stock.js'
@@ -37,4 +39,9 @@ const productoServicio = new ProductoServicio({
   modeloDetalleVenta: DetalleVenta
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio })
+const authServicio = new AuthServicio({
+  modeloUsuario: Usuario,
+  token: new Token()
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio })

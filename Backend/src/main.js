@@ -10,8 +10,10 @@ import { rutaStock } from './router/stock.js'
 import { rutaCategoria } from './router/categoria.js'
 import { rutaProducto } from './router/producto.js'
 import { SocketConfig } from './config/socket.js'
+import { rutaAuth } from './router/auth.js'
+import { decodificarToken } from '../middleware/DecodificarToken.js'
 
-export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio }) => {
+export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio }) => {
   const app = express()
   const port = 3000
 
@@ -21,11 +23,12 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaSe
   Conexiondatabase()
   app.use('/uploads', express.static(path.resolve('uploads')))
   // Montar el router en /usuario
-  app.use('/usuario', rutaUsuario({ usuarioServicio }))
-  app.use('/venta', rutaVentas({ ventaServicio }))
-  app.use('/stock', rutaStock({ stockServicio }))
-  app.use('/categoria', rutaCategoria({ categoriaServicio }))
-  app.use('/producto', rutaProducto({ productoServicio }))
+  app.use('/usuario', decodificarToken, rutaUsuario({ usuarioServicio }))
+  app.use('/venta', decodificarToken, rutaVentas({ ventaServicio }))
+  app.use('/stock', decodificarToken, rutaStock({ stockServicio }))
+  app.use('/categoria', decodificarToken, rutaCategoria({ categoriaServicio }))
+  app.use('/producto', decodificarToken, rutaProducto({ productoServicio }))
+  app.use('/auth', rutaAuth({ authServicio }))
 
   const server = createServer(app)
   const io = SocketConfig(server)

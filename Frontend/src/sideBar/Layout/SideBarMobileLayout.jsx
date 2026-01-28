@@ -17,13 +17,14 @@ export const SideBarMobileLayout = () => {
   const [activeTab, setActiveTab] = useState('home')
   const [pedidosPendientes, setPedidosPendientes] = useState(3)
   const [notifications, setNotifications] = useState(true)
+  const usuario = JSON.parse(localStorage.getItem('usuario')) || {}
 
   // Detectar tab activa basado en la ruta
   useEffect(() => {
     const path = location.pathname
-    if (path.includes('/pedidos')) setActiveTab('pedidos')
-    else if (path.includes('/nueva-orden')) setActiveTab('nueva')
-    else if (path.includes('/agregar-producto')) setActiveTab('agregar')
+    if (path.includes('/mesero/pedidos')) setActiveTab('pedidos')
+    else if (path.includes('/mesero/nueva-orden')) setActiveTab('nueva')
+    else if (path.includes('/mesero/pedidos/:ventaId/agregar-producto')) setActiveTab('agregar')
     else setActiveTab('home')
   }, [location])
 
@@ -70,8 +71,8 @@ export const SideBarMobileLayout = () => {
               <User className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h1 className="font-bold text-gray-900">Mesero: Juan Pérez</h1>
-              <p className="text-xs text-gray-500">Mesa 5 • Turno activo</p>
+              <h1 className="font-bold text-gray-900">Mesero: {usuario.userName}</h1>
+              <p className="text-xs text-gray-500">Turno activo</p>
             </div>
           </div>
         </div>

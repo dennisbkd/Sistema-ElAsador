@@ -33,12 +33,13 @@ export class ControladorVenta {
 
   crearVenta = this.#manejarRespuesta((req) => this.ventaServicio.crearVenta({
     body: req.body,
-    usuarioId: req.usuario?.id || 1,
+    usuarioId: req.usuario?.id,
     io: req.app.get('io')
   }), 201)
 
   ventasDelDiaDetallados = this.#manejarRespuesta((req) => this.ventaServicio.ventasDelDiaDetallado({
-    filtroEstado: req.query.filtroEstado
+    filtroEstado: req.query.filtroEstado,
+    usuarioId: req.usuario?.id
   }))
 
   agregarProductoAVenta = this.#manejarRespuesta((req) => this.ventaServicio.agregarProductoAVenta({

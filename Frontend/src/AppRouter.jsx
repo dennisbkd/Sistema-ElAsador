@@ -17,12 +17,19 @@ import { PedidosPage } from "./Admin/venta-Mobile/page/ListaPedidosMobilePage";
 import { NuevaVentaMobilePage } from "./Admin/venta-Mobile/page/NuevaVentaMobilePage";
 import { AgregarProductoOrdenPage } from "./Admin/venta-Mobile/page/AgregarProductoOrdenPage";
 import { VisualizarPedido } from "./Admin/venta-Mobile/page/VisualizarPedido";
+import { LoginPage } from "./Admin/auth/page/LoginPage";
+import { SinAutorizacion } from "./Admin/auth/page/SinAutorizacion";
+import { Rutaprotegida } from "./Admin/components/Rutaprotegida";
 
 export const AppRouter = () => {
   return (
     <Routes>
-      <Route path="/home" element={<SideBarLayout />}>
-        <Route path="usuarios" element={<UsuarioLayout />}>
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/home" element={
+        <Rutaprotegida rolesPermitidos={['ADMINISTRADOR']}>
+          <SideBarLayout />
+        </Rutaprotegida>}>
+        <Route path="usuarios" element={<UsuarioLayout />} >
           <Route index element={<UsuarioPage />} />
         </Route>
         {/* <Route path="pedido" element={
@@ -43,15 +50,19 @@ export const AppRouter = () => {
         </Route>
         <Route path="venta-mobile" element={<SideBarMobileLayout />} />
       </Route>
-      <Route path="/" element={<SideBarMobileLayout />}>
-        <Route index element={<Navigate to="/mesero" replace />} />
-        <Route path="mesero" element={<Navigate to="/mesero/nueva-orden" replace />} />
-        {/* Página de pedidos para mesero */}
-        <Route path="mesero/pedidos" element={<PedidosPage />} />
-        <Route path="mesero/nueva-orden" element={<NuevaVentaMobilePage />} />
-        <Route path="mesero/pedidos/:ventaId/agregar-producto" element={<AgregarProductoOrdenPage />} />
-        <Route path="mesero/pedidos/:ventaId/visualizar-pedido" element={<VisualizarPedido />} />
+      {/* Rutas para meseros */}
+      <Route path="mesero" element={
+        <Rutaprotegida rolesPermitidos={['MESERO']}>
+          <SideBarMobileLayout />
+        </Rutaprotegida>
+      }>
+        <Route index element={<Navigate to="nueva-orden" replace />} />
+        <Route path="pedidos" element={<PedidosPage />} />
+        <Route path="nueva-orden" element={<NuevaVentaMobilePage />} />
+        <Route path="pedidos/:ventaId/agregar-producto" element={<AgregarProductoOrdenPage />} />
+        <Route path="pedidos/:ventaId/visualizar-pedido" element={<VisualizarPedido />} />
       </Route>
+      <Route path="/autorizacion-restringida" element={<SinAutorizacion />} />
     </Routes>
   )
 }
