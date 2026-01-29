@@ -149,7 +149,11 @@ export class ProductoServicio {
       }
       await transaction.commit()
       if (io) {
-        io.emit('productoActualizado', { productoId: existeProducto.id })
+        io.emit('productoActualizado', {
+          nombre: actualizarDatos.nombre || existeProducto.nombre,
+          id: existeProducto.id,
+          mensaje: 'El producto ha sido actualizado.'
+        })
       }
     } catch (error) {
       await transaction.rollback()
