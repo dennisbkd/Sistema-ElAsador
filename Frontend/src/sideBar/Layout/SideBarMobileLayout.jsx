@@ -10,21 +10,24 @@ import {
   User
 } from 'lucide-react'
 import { BotonIcon } from '../components/BotonIcon'
+import { useNotificacion } from '../../hooks/useNotificacion'
 
 export const SideBarMobileLayout = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('home')
-  const [pedidosPendientes, setPedidosPendientes] = useState(3)
-  const [notifications, setNotifications] = useState(true)
   const usuario = JSON.parse(localStorage.getItem('usuario')) || {}
+  const {
+    notificacionesNoLeidas,
+    hayNuevasNotificaciones
+  } = useNotificacion()
+
 
   // Detectar tab activa basado en la ruta
   useEffect(() => {
     const path = location.pathname
     if (path.includes('/mesero/pedidos')) setActiveTab('pedidos')
     else if (path.includes('/mesero/nueva-orden')) setActiveTab('nueva')
-    else if (path.includes('/mesero/pedidos/:ventaId/agregar-producto')) setActiveTab('agregar')
     else setActiveTab('home')
   }, [location])
 
@@ -35,8 +38,7 @@ export const SideBarMobileLayout = () => {
       icon: ListOrdered,
       text: 'Pedidos',
       path: '/mesero/pedidos',
-      badge: pedidosPendientes,
-      notification: true
+
     },
     {
       id: 'nueva',
@@ -51,8 +53,8 @@ export const SideBarMobileLayout = () => {
       icon: Bell,
       text: 'Alertas',
       path: '/mesero/notificaciones',
-      badge: null,
-      notification: notifications
+      badge: notificacionesNoLeidas > 0 ? notificacionesNoLeidas : null,
+      notification: hayNuevasNotificaciones
     }
   ]
 

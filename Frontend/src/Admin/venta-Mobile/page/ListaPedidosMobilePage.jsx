@@ -27,7 +27,6 @@ export const PedidosPage = () => {
     { id: 'TODOS', label: 'Todos', color: 'bg-gray-500' },
     { id: 'PENDIENTE', label: 'Pendientes', color: 'bg-yellow-500' },
     { id: 'LISTO', label: 'Listos', color: 'bg-green-500' },
-    { id: 'ENTREGADO', label: 'Entregados', color: 'bg-gray-500' }
   ]
 
   // Aplicar filtros
@@ -189,10 +188,6 @@ export const PedidosPage = () => {
           </div>
         )}
       </div>
-      {/* Botón flotante para nuevo pedido */}
-      <button className="fixed bottom-24 right-4 z-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-95 transition-all duration-200">
-        <PlusCircle size={24} />
-      </button>
     </div>
   )
 }
