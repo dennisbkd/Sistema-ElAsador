@@ -3,7 +3,7 @@ import React, { useCallback, useContext } from 'react'
 import { SocketContext } from '../context/SocketContext'
 
 export const useSocket = () => {
-  const socket = useContext(SocketContext)
+  const { socket, isConnected } = useContext(SocketContext)
 
   const escuchar = useCallback((evento, callback) => {
     if (!socket) return
@@ -20,6 +20,6 @@ export const useSocket = () => {
     socket,
     escuchar,
     emitir,
-    isConnected: socket?.connected || false
+    isConnected: isConnected
   }
 }

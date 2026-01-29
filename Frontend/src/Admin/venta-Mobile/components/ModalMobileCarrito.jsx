@@ -209,8 +209,6 @@ export const ModalMobileCarrito = ({
                 <button
                   type="button"
                   onClick={() => {
-                    // Aquí iría la lógica para continuar con la orden
-                    console.log('Continuar con el pedido:', carrito)
                     setMostrarCarrito(false)
                     handleConfirmarPedido()
                   }}
