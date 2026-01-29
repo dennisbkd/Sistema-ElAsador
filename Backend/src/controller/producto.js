@@ -26,7 +26,10 @@ export class ProductoControlador {
 
   editarProducto = this.#manejarRespuesta((req) =>
     this.productoServicio.editarProducto({
-      id: req.params.id, body: req.body, file: req.file
+      id: req.params.id,
+      body: req.body,
+      file: req.file,
+      io: req.app.get('io')
     }))
 
   obtenerProductoId = this.#manejarRespuesta((req) =>

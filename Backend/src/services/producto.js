@@ -102,14 +102,13 @@ export class ProductoServicio {
 
       return nuevoProducto
     } catch (error) {
-      console.error(error)
       await transaction.rollback()
       throw new Error('Error al crear un producto')
     }
   }
 
   // editar producto
-  async editarProducto ({ id, body, file }) {
+  async editarProducto ({ id, body, file, io }) {
     const transaction = await sequelize.transaction()
     const {
       nombre,
@@ -149,9 +148,10 @@ export class ProductoServicio {
         await existeProducto.update(actualizarDatos, { transaction })
       }
       await transaction.commit()
-      return { message: 'Producto actualizado' }
+      if (io) {
+        io.emit('productoActualizado', { productoId: existeProducto.id })
+      }
     } catch (error) {
-      console.error(error)
       await transaction.rollback()
       throw new Error('Error al actualizar el producto')
     }
@@ -178,7 +178,6 @@ export class ProductoServicio {
       await transaction.commit()
       return { message: 'Producto eliminado correctamente' }
     } catch (error) {
-      console.log(error)
       await transaction.rollback()
       throw new Error('Error al eliminar el producto')
     }
@@ -213,7 +212,6 @@ export class ProductoServicio {
         stock: producto.StockPlato
       }
     } catch (error) {
-      console.error(error)
       throw new Error('Error al obtener el producto por id')
     }
   }
@@ -265,7 +263,6 @@ export class ProductoServicio {
       })
       return dtoProducto
     } catch (error) {
-      console.log(error)
       throw new Error('Error en la busqueda de productos por nombre')
     }
   }
@@ -283,7 +280,6 @@ export class ProductoServicio {
       await transaction.commit()
       return { message: 'Estado del producto actualizado correctamente' }
     } catch (error) {
-      console.log(error)
       await transaction.rollback()
       throw new Error('Error al cambiar el estado del producto')
     }
