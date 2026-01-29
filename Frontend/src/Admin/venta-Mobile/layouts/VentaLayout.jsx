@@ -9,7 +9,7 @@ import { SpinnerCargando } from "../../../ui/spinner/SpinnerCargando"
 import { BotonAccion } from "../../../ui/boton/BotonAccion"
 import { useDebonce } from "../../gestion-items/producto/hooks/useDebonce"
 import { ErrorMessage } from "../../../ui/ErrorMessage"
-import { useVentaSocket } from "../hooks/useVentaSocket";
+import { useSocketMesero } from "../../../hooks/useSocketMesero"
 
 export const VentaLayout = ({
   children,
@@ -22,7 +22,7 @@ export const VentaLayout = ({
   const [nombreBusqueda, setNombreBusqueda] = useState('')
   const nombreDebonce = useDebonce({ value: nombreBusqueda, delay: 300 })
   const [categoriaId, setCategoriaId] = useState(null)
-  const { isConnected } = useVentaSocket()
+  const { isConnected } = useSocketMesero()
 
   const {
     productos,
