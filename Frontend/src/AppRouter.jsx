@@ -20,6 +20,7 @@ import { VisualizarPedido } from "./Admin/venta-Mobile/page/VisualizarPedido";
 import { LoginPage } from "./Admin/auth/page/LoginPage";
 import { SinAutorizacion } from "./Admin/auth/page/SinAutorizacion";
 import { Rutaprotegida } from "./Admin/components/Rutaprotegida";
+import NotificacionesPage from "./Admin/venta-Mobile/page/NotificacionPage";
 
 export const AppRouter = () => {
   return (
@@ -61,6 +62,7 @@ export const AppRouter = () => {
         <Route path="nueva-orden" element={<NuevaVentaMobilePage />} />
         <Route path="pedidos/:ventaId/agregar-producto" element={<AgregarProductoOrdenPage />} />
         <Route path="pedidos/:ventaId/visualizar-pedido" element={<VisualizarPedido />} />
+        <Route path="notificaciones" element={<NotificacionesPage />} />
       </Route>
       <Route path="/autorizacion-restringida" element={<SinAutorizacion />} />
     </Routes>
