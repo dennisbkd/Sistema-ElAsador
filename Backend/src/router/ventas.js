@@ -10,5 +10,6 @@ export const rutaVentas = ({ ventaServicio }) => {
   rutas.post('/registrar-venta', verificarRol(['MESERO', 'CAJERO']), controladorVenta.crearVenta)
   rutas.post('/:id/agregar-producto', verificarRol(['MESERO', 'CAJERO']), controladorVenta.agregarProductoAVenta)
   rutas.get('/:id', verificarRol(['MESERO', 'CAJERO']), controladorVenta.obtenerVentaId)
+  rutas.get('/:id/imprimir', verificarRol(['MESERO', 'CAJERO']), controladorVenta.imprimirVenta)
   return rutas
 }

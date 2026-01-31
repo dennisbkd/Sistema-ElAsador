@@ -4,12 +4,14 @@ import { ProductoSinStockError, StockInsuficienteError, VentaSearchError } from 
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
 
 export class VentaServicio {
-  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato }) {
+  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora }) {
     this.modeloVenta = modeloVenta
     this.modeloDetalle = modeloDetalle
     this.modeloProducto = modeloProducto
     this.modeloCategoria = modeloCategoria
     this.modeloStock = modeloStockPlato
+    this.modeloUsuario = modeloUsuario
+    this.impresora = impresora
   }
 
   async ventasDelDiaDetallados () {
@@ -178,6 +180,7 @@ export class VentaServicio {
           total
         })
       }
+      await this.imprimirTicketCocina({ ventaId: venta.id })
     } catch (error) {
       await transaction.rollback()
       throw error
@@ -327,6 +330,89 @@ export class VentaServicio {
       return ventasFormateadas
     } catch (error) {
       throw new VentaSearchError(error.message)
+    }
+  }
+
+  async imprimirVenta ({ ventaId, metodoPago }) {
+    try {
+      const venta = await this.modeloVenta.findByPk(ventaId, {
+        attributes: ['id', 'codigo', 'nroMesa', 'clienteNombre', 'total', 'createdAt'],
+        include: [{
+          model: this.modeloDetalle,
+          attributes: ['cantidad', 'subtotal', 'precioUnitario'],
+          include: [{
+            model: this.modeloProducto,
+            attributes: ['nombre']
+          }]
+        }, {
+          model: this.modeloUsuario,
+          attributes: ['nombre']
+        }]
+      })
+      const fecha = venta.createdAt.toLocaleDateString('es-BO')
+      const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      const DtoVenta = {
+        codigo: venta.codigo,
+        mesa: venta.nroMesa,
+        cliente: venta.clienteNombre || 'Consumidor Final',
+        mesero: venta.Usuario?.nombre || 'Desconocido',
+        fecha,
+        hora,
+        total: Number(venta.total),
+        metodoPago: metodoPago || 'No especificado',
+        items: venta.DetallePedidos.map(item => ({
+          nombre: item.Producto?.nombre || 'Producto Desconocido',
+          cantidad: Number(item.cantidad),
+          subtotal: Number(item.subtotal),
+          precioUnitario: Number(item.precioUnitario)
+        }))
+      }
+      return await this.impresora.imprimirVenta(DtoVenta)
+    } catch (error) {
+      throw new Error('Error al imprimir la venta: ' + error.message)
+    }
+  }
+
+  async imprimirTicketCocina ({ ventaId }) {
+    try {
+      const venta = await this.modeloVenta.findByPk(ventaId, {
+        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt'],
+        include: [{
+          model: this.modeloDetalle,
+          attributes: ['cantidad', 'observaciones'],
+          include: [{
+            model: this.modeloProducto,
+            attributes: ['nombre']
+          }]
+        }, {
+          model: this.modeloUsuario,
+          attributes: ['nombre']
+        }]
+      })
+      const fecha = venta.createdAt.toLocaleDateString('es-BO')
+      const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+      const DtoTicketCocina = {
+        codigo: venta.codigo,
+        mesa: venta.nroMesa,
+        cliente: venta.clienteNombre || 'Sin nombre',
+        mesero: venta.Usuario?.nombre || 'Desconocido',
+        fecha,
+        hora,
+        items: venta.DetallePedidos.map(item => ({
+          nombre: item.Producto?.nombre || 'Producto Desconocido',
+          cantidad: Number(item.cantidad),
+          observaciones: item.observaciones || null
+        }))
+      }
+      return await this.impresora.imprimirTicketCocina(DtoTicketCocina)
+    } catch (error) {
+
     }
   }
 }

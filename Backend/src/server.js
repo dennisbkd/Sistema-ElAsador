@@ -3,6 +3,7 @@ import { App } from './main.js'
 import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
 import { AuthServicio } from './services/auth.js'
 import { CategoriaServicio } from './services/categoria.js'
+import { ImpresoraServicio } from './services/impresora.js'
 import { ProductoServicio } from './services/producto.js'
 import { StockServicio } from './services/stock.js'
 
@@ -16,7 +17,9 @@ const ventaServicio = new VentaServicio(
     modeloDetalle: DetalleVenta,
     modeloProducto: Producto,
     modeloCategoria: Categoria,
-    modeloStockPlato: StockPlato
+    modeloStockPlato: StockPlato,
+    modeloUsuario: Usuario,
+    impresora: new ImpresoraServicio()
   }
 )
 const stockServicio = new StockServicio({
