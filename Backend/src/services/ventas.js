@@ -1,6 +1,6 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../model/index.js'
-import { ProductoSinStockError, StockInsuficienteError, VentaSearchError } from '../errors/index.js'
+import { ProductoSinStockError, StockInsuficienteError, VentaErrorComun, VentaSearchError } from '../errors/index.js'
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
 
 export class VentaServicio {
@@ -252,6 +252,11 @@ export class VentaServicio {
     const { detalle } = body
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
+
+      if (['CANCELADO', 'PAGADO', 'LISTO'].includes(venta.estado)) {
+        throw new VentaErrorComun('No se puede agregar productos a esta venta')
+      }
+
       if (!venta) {
         await transaction.rollback()
         throw new VentaSearchError(`Venta con ID ${ventaId} no encontrada`)
