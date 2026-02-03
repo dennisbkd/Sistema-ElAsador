@@ -23,7 +23,6 @@ export const TarjetaPedido = ({ pedido, onSelect, onAdd }) => {
           <EstadoIcon size={16} />
           <span className="font-semibold text-sm">{estadoConfig.text}</span>
         </div>
-        <span className="text-sm font-medium">{pedido.tiempoEspera}</span>
       </div>
 
       {/* Contenido principal */}
@@ -55,7 +54,6 @@ export const TarjetaPedido = ({ pedido, onSelect, onAdd }) => {
         <div className="mb-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-gray-700">Pedido ({pedido.total_items} items)</span>
-            <span className="text-sm text-gray-500">Ver todos</span>
           </div>
           <div className="space-y-2">
             {pedido.total_items > 2 && (
@@ -86,9 +84,14 @@ export const TarjetaPedido = ({ pedido, onSelect, onAdd }) => {
             <button onClick={() => onSelect(pedido)} className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors">
               <Eye size={16} />
             </button>
-            <button onClick={() => onAdd(pedido)} className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Agregar
-            </button>
+            {/* SOLO SE PODRA AGREGAR PRODUCTOS CUANDO EL PEDIDO ESTE EN PENDIENTE */}
+            {
+              pedido.estado === 'PENDIENTE' && (
+                <button onClick={() => onAdd(pedido)} className="px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                  Agregar
+                </button>
+              )
+            }
           </div>
         </div>
       </div>
