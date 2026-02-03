@@ -7,8 +7,6 @@ import { Categoria } from './categoria.js'
 import { TicketCocina } from './ticketCocina.js'
 import { MovimientoStock } from './movimientoStock.js'
 import { Pago } from './pago.js'
-import { MetodoPago } from './metodoPago.js'
-import { PagoDetalle } from './pagoDetalle.js'
 import sequelize from '../database/conexion.js'
 
 Usuario.hasMany(Venta, { foreignKey: 'usuarioId' })
@@ -38,28 +36,14 @@ DetalleVenta.belongsTo(Venta, { foreignKey: 'ventaId' })
 Venta.hasMany(TicketCocina, { foreignKey: 'ventaId' })
 TicketCocina.belongsTo(Venta, { foreignKey: 'ventaId' })
 
-Venta.hasMany(Pago, { foreignKey: 'ventaId' })
+Venta.hasOne(Pago, { foreignKey: 'ventaId' })
 Pago.belongsTo(Venta, { foreignKey: 'ventaId' })
 
 // 5 Relacion DetalleVenta
 DetalleVenta.hasOne(TicketCocina, { foreignKey: 'detalleVentaId' })
 TicketCocina.belongsTo(DetalleVenta, { foreignKey: 'detalleVentaId' })
 
-DetalleVenta.hasMany(PagoDetalle, { foreignKey: 'detalleVentaId' })
-PagoDetalle.belongsTo(DetalleVenta, { foreignKey: 'detalleVentaId' })
-
-// 6 Relacion Pago
-Pago.belongsTo(MetodoPago, { foreignKey: 'metodoPagoId' })
-MetodoPago.hasMany(Pago, { foreignKey: 'metodoPagoId' })
-
-Pago.hasMany(PagoDetalle, {
-  foreignKey: 'pagoId',
-  onDelete: 'CASCADE',
-  hooks: true
-})
-PagoDetalle.belongsTo(Pago, { foreignKey: 'pagoId' })
-
-// 7 RELACIÓN N:M ENTRE VENTA Y PRODUCTO (A TRAVÉS DE DETALLEVENTA)
+// 6 RELACIÓN N:M ENTRE VENTA Y PRODUCTO (A TRAVÉS DE DETALLEVENTA)
 Venta.belongsToMany(Producto, {
   through: DetalleVenta,
   foreignKey: 'ventaId',
@@ -71,17 +55,6 @@ Producto.belongsToMany(Venta, {
   foreignKey: 'productoId',
   otherKey: 'ventaId'
 })
-// 8. RELACIÓN N:M ENTRE PAGO Y DETALLEVENTA (A TRAVÉS DE PAGODETALLE)
-Pago.belongsToMany(DetalleVenta, {
-  through: PagoDetalle,
-  foreignKey: 'pagoId',
-  otherKey: 'detalleVentaId'
-})
-DetalleVenta.belongsToMany(Pago, {
-  through: PagoDetalle,
-  foreignKey: 'detalleVentaId',
-  otherKey: 'pagoId'
-})
 
 export {
   Usuario,
@@ -91,8 +64,6 @@ export {
   DetalleVenta,
   Categoria,
   Pago,
-  PagoDetalle,
-  MetodoPago,
   MovimientoStock,
   TicketCocina,
   sequelize

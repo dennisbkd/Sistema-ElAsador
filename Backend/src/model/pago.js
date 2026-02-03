@@ -16,8 +16,9 @@ export const Pago = sequelize.define('Pago',
         key: 'id'
       }
     },
-    metodoPagoId: {
-      type: DataTypes.INTEGER,
+    metodoPago: {
+      type: DataTypes.ENUM('EFECTIVO', 'QR'),
+      defaultValue: 'EFECTIVO',
       allowNull: false,
       references: {
         model: 'MetodoPago',
@@ -27,14 +28,6 @@ export const Pago = sequelize.define('Pago',
     monto: {
       type: DataTypes.DECIMAL(10, 2),
       allowNull: false
-    },
-    referencia: {
-      type: DataTypes.STRING(100),
-      allowNull: true
-    },
-    estado: {
-      type: DataTypes.ENUM('PENDIENTE', 'COMPLETADO', 'ANULADO'),
-      defaultValue: 'PENDIENTE'
     }
   },
   {
