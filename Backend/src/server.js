@@ -9,6 +9,7 @@ import { StockServicio } from './services/stock.js'
 
 import { UsuarioServicio } from './services/usuario.js'
 import { VentaServicio } from './services/ventas.js'
+import { VentasAdminServicio } from './services/ventasAdmin.js'
 
 const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelVenta: Venta })
 const ventaServicio = new VentaServicio(
@@ -47,4 +48,13 @@ const authServicio = new AuthServicio({
   token: new Token()
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio })
+const ventasAdminServicio = new VentasAdminServicio({
+  ventaServicio,
+  modeloVenta: Venta,
+  modeloDetalleVenta: DetalleVenta,
+  modeloProducto: Producto,
+  modeloStockPlato: StockPlato,
+  modeloUsuario: Usuario
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio })
