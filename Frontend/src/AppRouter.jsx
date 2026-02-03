@@ -21,6 +21,8 @@ import { LoginPage } from "./Admin/auth/page/LoginPage";
 import { SinAutorizacion } from "./Admin/auth/page/SinAutorizacion";
 import { Rutaprotegida } from "./Admin/components/Rutaprotegida";
 import NotificacionesPage from "./Admin/venta-Mobile/page/NotificacionPage";
+import { PedidosPageAdmin } from "./Admin/ajustes/page/PedidosPageAdmin";
+import { PedidoDetallePage } from "./Admin/ajustes/page/PedidoDetallePage";
 
 export const AppRouter = () => {
   return (
@@ -50,6 +52,11 @@ export const AppRouter = () => {
           <Route index element={<CategoriaPage />} />
         </Route>
         <Route path="venta-mobile" element={<SideBarMobileLayout />} />
+        {/* Rutas para ajustes de la venta solo para admin  */}
+        <Route path="ajustes-venta" >
+          <Route index element={<PedidosPageAdmin />} />
+          <Route path="pedido/:pedidoId" element={<PedidoDetallePage />} />
+        </Route>
       </Route>
       {/* Rutas para meseros */}
       <Route path="mesero" element={
