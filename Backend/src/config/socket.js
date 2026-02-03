@@ -11,7 +11,21 @@ export function SocketConfig (server) {
   })
 
   io.on('connection', (socket) => {
-    console.log('🟢 Cliente conectado:', socket.id)
+    const usuarioId = socket.handshake.auth.usuario?.id || null
+
+    if (usuarioId) {
+      socket.join(`usuario_${usuarioId}`)
+      console.log('🟢 Cliente conectado:', socket.id, 'Usuario:', usuarioId)
+    }
+    socket.on('join_room', (room) => {
+      socket.join(room)
+      console.log('🟢 Cliente conectado:', socket.id, 'se unió a la sala:', room)
+    })
+
+    socket.on('leave_room', (room) => {
+      socket.leave(room)
+      console.log('🟠 Cliente desconectado:', socket.id, 'salió de la sala:', room)
+    })
 
     socket.on('disconnect', () => {
       console.log('🔴 Cliente desconectado:', socket.id)

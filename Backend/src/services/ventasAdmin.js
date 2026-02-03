@@ -261,7 +261,7 @@ export class VentasAdminServicio {
   }
 
   // cambiar estado de la venta ya sea de PENDIENTE a LISTO o de LISTO a PAGADO
-  async cambiarEstadoVenta ({ ventaId, body }) {
+  async cambiarEstadoVenta ({ ventaId, body, io }) {
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
@@ -275,11 +275,14 @@ export class VentasAdminServicio {
         throw new VentaErrorComun('No se puede cambiar el estado de una venta pagada')
       }
       venta.estado = body.nuevoEstado
-      await venta.save()
+      await venta.save({ transaction })
       await transaction.commit()
+      if (io) {
+        io.to(`usuario_${venta.usuarioId}`).emit('estado_venta_cambiado', { ventaId: venta.id, nuevoEstado: venta.estado, mesero: venta.usuarioId })
+      }
       return venta
     } catch (error) {
-      transaction.rollback()
+      await transaction.rollback()
       throw error
     }
   }
