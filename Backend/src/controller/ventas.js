@@ -51,4 +51,9 @@ export class ControladorVenta {
   obtenerVentaId = this.#manejarRespuesta((req) => this.ventaServicio.obtenerVentaId({
     ventaId: req.params.id
   }))
+
+  imprimirVenta = this.#manejarRespuesta((req) => this.ventaServicio.imprimirVenta({
+    ventaId: req.params.id
+
+  }))
 }

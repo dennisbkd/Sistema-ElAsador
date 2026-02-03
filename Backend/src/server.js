@@ -3,11 +3,13 @@ import { App } from './main.js'
 import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
 import { AuthServicio } from './services/auth.js'
 import { CategoriaServicio } from './services/categoria.js'
+import { ImpresoraServicio } from './services/impresora.js'
 import { ProductoServicio } from './services/producto.js'
 import { StockServicio } from './services/stock.js'
 
 import { UsuarioServicio } from './services/usuario.js'
 import { VentaServicio } from './services/ventas.js'
+import { VentasAdminServicio } from './services/ventasAdmin.js'
 
 const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelVenta: Venta })
 const ventaServicio = new VentaServicio(
@@ -16,7 +18,9 @@ const ventaServicio = new VentaServicio(
     modeloDetalle: DetalleVenta,
     modeloProducto: Producto,
     modeloCategoria: Categoria,
-    modeloStockPlato: StockPlato
+    modeloStockPlato: StockPlato,
+    modeloUsuario: Usuario,
+    impresora: new ImpresoraServicio()
   }
 )
 const stockServicio = new StockServicio({
@@ -44,4 +48,13 @@ const authServicio = new AuthServicio({
   token: new Token()
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio })
+const ventasAdminServicio = new VentasAdminServicio({
+  ventaServicio,
+  modeloVenta: Venta,
+  modeloDetalleVenta: DetalleVenta,
+  modeloProducto: Producto,
+  modeloStockPlato: StockPlato,
+  modeloUsuario: Usuario
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio })
