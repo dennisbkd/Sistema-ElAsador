@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { BotonIcon } from '../components/BotonIcon'
 import { useNotificacion } from '../../hooks/useNotificacion'
+import { useAjustesSocket } from '../../Admin/ajustes/hooks/useAjustesSocket'
 
 export const SideBarMobileLayout = () => {
   const location = useLocation()
@@ -21,7 +22,7 @@ export const SideBarMobileLayout = () => {
     notificacionesNoLeidas,
     hayNuevasNotificaciones
   } = useNotificacion()
-
+  useAjustesSocket()
 
   // Detectar tab activa basado en la ruta
   useEffect(() => {
