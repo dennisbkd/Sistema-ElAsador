@@ -83,7 +83,8 @@ export class ControladorVentaAdmin {
 
   cambiarEstadoVenta = this.#manejarRespuesta((req) => this.ventasAdminServicio.cambiarEstadoVenta({
     ventaId: req.params.id,
-    body: req.body
+    body: req.body,
+    io: req.app.get('io')
   }))
 
   imprimirComandaCocina = this.#manejarRespuesta((req) => this.ventasAdminServicio.imprimirComandaCocina({

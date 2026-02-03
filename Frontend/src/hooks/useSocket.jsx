@@ -16,10 +16,23 @@ export const useSocket = () => {
     socket.emit(evento, datos)
   }, [socket])
 
+  // funciones para manejar rooms
+  const unirARoom = useCallback((roomName) => {
+    if (!socket) return
+    socket.emit('join_room', roomName)
+  }, [socket])
+
+  const salirDeRoom = useCallback((roomName) => {
+    if (!socket) return
+    socket.emit('leave_room', roomName)
+  }, [socket])
+
   return {
     socket,
     escuchar,
     emitir,
-    isConnected: isConnected
+    isConnected: isConnected,
+    unirARoom,
+    salirDeRoom
   }
 }

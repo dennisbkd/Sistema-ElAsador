@@ -51,7 +51,6 @@ export const AppRouter = () => {
         <Route path="categoria" element={<CategoriaLayout />} >
           <Route index element={<CategoriaPage />} />
         </Route>
-        <Route path="venta-mobile" element={<SideBarMobileLayout />} />
         {/* Rutas para ajustes de la venta solo para admin  */}
         <Route path="ajustes-venta" >
           <Route index element={<PedidosPageAdmin />} />

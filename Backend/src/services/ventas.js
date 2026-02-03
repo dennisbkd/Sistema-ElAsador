@@ -107,7 +107,7 @@ export class VentaServicio {
           fecha,
           hora
         }
-      })
+      }).filter(venta => ['LISTO', 'PENDIENTE'].includes(venta.estado))
       return ventasFormateadas
     } catch (error) {
       return { error: error.message }
