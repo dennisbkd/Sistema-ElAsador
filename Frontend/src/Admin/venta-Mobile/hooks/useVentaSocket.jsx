@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // hooks/useVentaSocket.js - CORREGIDO
 import { useEffect } from 'react'
 import { useSocket } from "../../../hooks/useSocket"
@@ -13,14 +14,14 @@ export const useVentaSocket = () => {
       return
     }
 
-    const limpiarCrearVenta = escuchar('ventaCreada', (data) => {
-      console.log('💰 Venta creada recibida:', data)
+    const limpiarCrearVenta = escuchar('ventaCreada', (_data) => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
     })
 
-    const limpiarAgregarItemAventa = escuchar('productoAgregadoAVenta', (data) => {
-      console.log('🛒 Producto agregado a venta recibido:', data)
+    const limpiarAgregarItemAventa = escuchar('productoAgregadoAVenta', (_data) => {
       queryClient.invalidateQueries({ queryKey: ['productos'] })
+      queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
     })
 
     return () => {

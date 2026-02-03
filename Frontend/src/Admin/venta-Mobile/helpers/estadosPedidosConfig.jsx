@@ -1,8 +1,7 @@
 import {
   Clock,
   CheckCircle,
-  AlertCircle,
-  Utensils
+  AlertCircle
 } from 'lucide-react'
 
 export const getEstadoConfig = (estado) => {
@@ -13,23 +12,11 @@ export const getEstadoConfig = (estado) => {
       text: 'Pendiente',
       dotColor: 'bg-yellow-500'
     },
-    PREPARANDO: {
-      color: 'bg-blue-100 text-blue-800 border-blue-200',
-      icon: Utensils,
-      text: 'Preparando',
-      dotColor: 'bg-blue-500'
-    },
     LISTO: {
       color: 'bg-green-100 text-green-800 border-green-200',
       icon: CheckCircle,
-      text: 'Listo para servir',
+      text: 'Completado',
       dotColor: 'bg-green-500'
-    },
-    ENTREGADO: {
-      color: 'bg-gray-100 text-gray-800 border-gray-200',
-      icon: CheckCircle,
-      text: 'Entregado',
-      dotColor: 'bg-gray-500'
     },
     CANCELADO: {
       color: 'bg-red-100 text-red-800 border-red-200',

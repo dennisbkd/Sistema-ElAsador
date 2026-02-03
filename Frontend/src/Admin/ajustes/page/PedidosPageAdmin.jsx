@@ -24,6 +24,7 @@ import {
 } from 'lucide-react'
 import { useAjustesManager } from '../hooks/useAjustesManager'
 import { TarjetaPedido } from '../components/TarjetaPedido'
+import { useSocketMesero } from '../../../hooks/useSocketMesero'
 export const PedidosPageAdmin = () => {
   const [filtroEstado, setFiltroEstado] = useState('TODOS')
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
@@ -46,6 +47,7 @@ export const PedidosPageAdmin = () => {
       tipoVenta: filtroTipo !== 'TODOS' ? filtroTipo : undefined
     }
   })
+  const { isConnected } = useSocketMesero()
 
   // Estados disponibles
   const estados = [
@@ -111,7 +113,9 @@ export const PedidosPageAdmin = () => {
       <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Gestión de Pedidos  {isConnected ?
+              <div className="rounded-full h-3 w-3 bg-green-500 inline-block ml-2"></div> :
+              <div className="rounded-full h-3 w-3 bg-red-500 inline-block ml-2"></div>}</h1>
             <p className="text-gray-600">Administra todos los pedidos del restaurante</p>
           </div>
 
