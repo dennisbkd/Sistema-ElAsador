@@ -1,7 +1,8 @@
 import { Token } from './config/token.js'
 import { App } from './main.js'
-import { Categoria, DetalleVenta, MovimientoStock, Producto, StockPlato, Usuario, Venta } from './model/index.js'
+import { CajaSesion, Categoria, DetalleVenta, MovimientoStock, Pago, Producto, StockPlato, Usuario, Venta } from './model/index.js'
 import { AuthServicio } from './services/auth.js'
+import { CajeroServicio } from './services/cajero.js'
 import { CategoriaServicio } from './services/categoria.js'
 import { ImpresoraServicio } from './services/impresora.js'
 import { ProductoServicio } from './services/producto.js'
@@ -57,4 +58,12 @@ const ventasAdminServicio = new VentasAdminServicio({
   modeloUsuario: Usuario
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio })
+const cajeroServicio = new CajeroServicio({
+  ventasAdminServicio,
+  modeloVenta: Venta,
+  modeloPago: Pago,
+  modeloCajaSesion: CajaSesion,
+  modeloUsuario: Usuario
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio })
