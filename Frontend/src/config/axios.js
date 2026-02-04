@@ -20,10 +20,10 @@ instancia.interceptors.response.use(
     return Promise.reject(error)
   }
 
-  if(error.response?.status === 401 && window.location.pathname !=='/login'){
+  if(error.response?.status === 401 && window.location.pathname !=='/'){
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
-    window.location.href = '/login'
+    window.location.href = '/'
   }
     return Promise.reject(error)
   }
