@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 export const useAjustesQuery = ({ filtros }) => {
   const [page, setPage] = useState(1)
   const pedidosQuery = useQuery({
-    queryKey: ['ajustes-admin', filtros, page],
+    queryKey: ['ajustes-admin', filtros?.filtroEstado, filtros?.tipoVenta, page],
     queryFn: () => obtenerVentasAdmin({ filtros, page })
   })
 
