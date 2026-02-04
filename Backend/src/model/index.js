@@ -7,12 +7,21 @@ import { Categoria } from './categoria.js'
 import { TicketCocina } from './ticketCocina.js'
 import { MovimientoStock } from './movimientoStock.js'
 import { Pago } from './pago.js'
-import { MetodoPago } from './metodoPago.js'
-import { PagoDetalle } from './pagoDetalle.js'
 import sequelize from '../database/conexion.js'
+import { CajaSesion } from './cajaSession.js'
 
 Usuario.hasMany(Venta, { foreignKey: 'usuarioId' })
 Venta.belongsTo(Usuario, { foreignKey: 'usuarioId' })
+
+Usuario.hasMany(CajaSesion, {
+  foreignKey: 'usuarioId',
+  as: 'cajaSesiones'
+})
+
+CajaSesion.belongsTo(Usuario, {
+  foreignKey: 'usuarioId',
+  as: 'usuario'
+})
 
 Usuario.hasMany(MovimientoStock, { foreignKey: 'usuarioId' })
 MovimientoStock.belongsTo(Usuario, { foreignKey: 'usuarioId' })
@@ -41,25 +50,22 @@ TicketCocina.belongsTo(Venta, { foreignKey: 'ventaId' })
 Venta.hasMany(Pago, { foreignKey: 'ventaId' })
 Pago.belongsTo(Venta, { foreignKey: 'ventaId' })
 
+// CajaSesion tiene muchos Pagos
+CajaSesion.hasMany(Pago, {
+  foreignKey: 'cajaSesionId',
+  as: 'pagos'
+})
+
+Pago.belongsTo(CajaSesion, {
+  foreignKey: 'cajaSesionId',
+  as: 'cajaSesion'
+})
+
 // 5 Relacion DetalleVenta
 DetalleVenta.hasOne(TicketCocina, { foreignKey: 'detalleVentaId' })
 TicketCocina.belongsTo(DetalleVenta, { foreignKey: 'detalleVentaId' })
 
-DetalleVenta.hasMany(PagoDetalle, { foreignKey: 'detalleVentaId' })
-PagoDetalle.belongsTo(DetalleVenta, { foreignKey: 'detalleVentaId' })
-
-// 6 Relacion Pago
-Pago.belongsTo(MetodoPago, { foreignKey: 'metodoPagoId' })
-MetodoPago.hasMany(Pago, { foreignKey: 'metodoPagoId' })
-
-Pago.hasMany(PagoDetalle, {
-  foreignKey: 'pagoId',
-  onDelete: 'CASCADE',
-  hooks: true
-})
-PagoDetalle.belongsTo(Pago, { foreignKey: 'pagoId' })
-
-// 7 RELACIÓN N:M ENTRE VENTA Y PRODUCTO (A TRAVÉS DE DETALLEVENTA)
+// 6 RELACIÓN N:M ENTRE VENTA Y PRODUCTO (A TRAVÉS DE DETALLEVENTA)
 Venta.belongsToMany(Producto, {
   through: DetalleVenta,
   foreignKey: 'ventaId',
@@ -71,17 +77,6 @@ Producto.belongsToMany(Venta, {
   foreignKey: 'productoId',
   otherKey: 'ventaId'
 })
-// 8. RELACIÓN N:M ENTRE PAGO Y DETALLEVENTA (A TRAVÉS DE PAGODETALLE)
-Pago.belongsToMany(DetalleVenta, {
-  through: PagoDetalle,
-  foreignKey: 'pagoId',
-  otherKey: 'detalleVentaId'
-})
-DetalleVenta.belongsToMany(Pago, {
-  through: PagoDetalle,
-  foreignKey: 'detalleVentaId',
-  otherKey: 'pagoId'
-})
 
 export {
   Usuario,
@@ -91,9 +86,8 @@ export {
   DetalleVenta,
   Categoria,
   Pago,
-  PagoDetalle,
-  MetodoPago,
   MovimientoStock,
   TicketCocina,
+  CajaSesion,
   sequelize
 }

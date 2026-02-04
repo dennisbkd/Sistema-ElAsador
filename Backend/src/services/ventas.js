@@ -417,7 +417,7 @@ export class VentaServicio {
       }
       return await this.impresora.imprimirTicketCocina(DtoTicketCocina)
     } catch (error) {
-
+      throw new VentaErrorComun('Error al imprimir el ticket de cocina: ' + error.message)
     }
   }
 }

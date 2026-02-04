@@ -13,8 +13,9 @@ import { SocketConfig } from './config/socket.js'
 import { rutaAuth } from './router/auth.js'
 import { decodificarToken } from '../middleware/DecodificarToken.js'
 import { rutaVentasAdmin } from './router/ventasAdmin.js'
+import { rutasCajero } from './router/cajero.js'
 
-export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio }) => {
+export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio }) => {
   const app = express()
   const port = 3000
 
@@ -31,6 +32,7 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaSe
   app.use('/producto', decodificarToken, rutaProducto({ productoServicio }))
   app.use('/auth', rutaAuth({ authServicio }))
   app.use('/admin', decodificarToken, rutaVentasAdmin({ ventasAdminServicio }))
+  app.use('/cajero', decodificarToken, rutasCajero({ cajeroServicio }))
 
   const server = createServer(app)
   const io = SocketConfig(server)
