@@ -8,9 +8,20 @@ import { TicketCocina } from './ticketCocina.js'
 import { MovimientoStock } from './movimientoStock.js'
 import { Pago } from './pago.js'
 import sequelize from '../database/conexion.js'
+import { CajaSesion } from './cajaSession.js'
 
 Usuario.hasMany(Venta, { foreignKey: 'usuarioId' })
 Venta.belongsTo(Usuario, { foreignKey: 'usuarioId' })
+
+Usuario.hasMany(CajaSesion, {
+  foreignKey: 'usuarioId',
+  as: 'cajaSesiones'
+})
+
+CajaSesion.belongsTo(Usuario, {
+  foreignKey: 'usuarioId',
+  as: 'usuario'
+})
 
 Usuario.hasMany(MovimientoStock, { foreignKey: 'usuarioId' })
 MovimientoStock.belongsTo(Usuario, { foreignKey: 'usuarioId' })
@@ -36,8 +47,19 @@ DetalleVenta.belongsTo(Venta, { foreignKey: 'ventaId' })
 Venta.hasMany(TicketCocina, { foreignKey: 'ventaId' })
 TicketCocina.belongsTo(Venta, { foreignKey: 'ventaId' })
 
-Venta.hasOne(Pago, { foreignKey: 'ventaId' })
+Venta.hasMany(Pago, { foreignKey: 'ventaId' })
 Pago.belongsTo(Venta, { foreignKey: 'ventaId' })
+
+// CajaSesion tiene muchos Pagos
+CajaSesion.hasMany(Pago, {
+  foreignKey: 'cajaSesionId',
+  as: 'pagos'
+})
+
+Pago.belongsTo(CajaSesion, {
+  foreignKey: 'cajaSesionId',
+  as: 'cajaSesion'
+})
 
 // 5 Relacion DetalleVenta
 DetalleVenta.hasOne(TicketCocina, { foreignKey: 'detalleVentaId' })
@@ -66,5 +88,6 @@ export {
   Pago,
   MovimientoStock,
   TicketCocina,
+  CajaSesion,
   sequelize
 }

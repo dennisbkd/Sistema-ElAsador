@@ -68,7 +68,7 @@ export class VentasAdminServicio {
           nroMesa: venta.nroMesa,
           mesero: venta.Usuario?.nombre,
           clienteNombre: venta.clienteNombre ?? '',
-          total: venta.total,
+          total: Number(venta.total),
           tipo: venta.tipo,
           estado: venta.estado,
           total_items: venta.DetallePedidos.length ?? 0,
