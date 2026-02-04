@@ -23,6 +23,9 @@ import { Rutaprotegida } from "./Admin/components/Rutaprotegida";
 import NotificacionesPage from "./Admin/venta-Mobile/page/NotificacionPage";
 import { PedidosPageAdmin } from "./Admin/ajustes/page/PedidosPageAdmin";
 import { PedidoDetallePage } from "./Admin/ajustes/page/PedidoDetallePage";
+import { CajaPage } from "./Admin/cajero/page/CajaPage";
+import { CajeroLayout } from "./Admin/cajero/layout/CajeroLayout";
+import { VentaDetallePage } from "./Admin/cajero/page/VentaDetallePage";
 
 export const AppRouter = () => {
   return (
@@ -70,6 +73,17 @@ export const AppRouter = () => {
         <Route path="pedidos/:ventaId/visualizar-pedido" element={<VisualizarPedido />} />
         <Route path="notificaciones" element={<NotificacionesPage />} />
       </Route>
+      {/* Rutas para cajero */}
+      <Route path="cajero" element={
+        <Rutaprotegida rolesPermitidos={['CAJERO']}>
+          <CajeroLayout />
+        </Rutaprotegida>
+      }>
+        <Route index element={<Navigate to="caja" replace />} />
+        <Route path="caja" element={<CajaPage />} />
+        <Route path="venta/:ventaId" element={<VentaDetallePage />} />
+      </Route>
+
       <Route path="/autorizacion-restringida" element={<SinAutorizacion />} />
     </Routes>
   )
