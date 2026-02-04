@@ -262,6 +262,7 @@ export class VentasAdminServicio {
 
   // cambiar estado de la venta ya sea de PENDIENTE a LISTO o de LISTO a PAGADO
   async cambiarEstadoVenta ({ ventaId, body, io }) {
+    console.log('cambiarEstadoVenta llamado con:', ventaId, body)
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
