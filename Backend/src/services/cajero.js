@@ -196,11 +196,8 @@ export class CajeroServicio {
         cajaSesionId: cajaActiva.id
       }, { transaction })
       // actualizar el estado de la venta a PAGADO
-      await venta.update({ estado: 'PAGADO' }, { transaction })
       await transaction.commit()
-      if (io) {
-        io.to(`usuario_${venta.usuarioId}`).emit('estado_venta_cambiado', { ventaId: venta.id, nuevoEstado: venta.estado, mesero: venta.usuarioId })
-      }
+      await this.ventasAdminServicio.cambiarEstadoVenta({ ventaId, body: { nuevoEstado: 'PAGADO' }, io })
       return { mensaje: 'Pago registrado exitosamente' }
     } catch (error) {
       await transaction.rollback()

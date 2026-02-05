@@ -22,6 +22,7 @@ import { PedidoDetallePage } from "./Admin/ajustes/page/PedidoDetallePage";
 import { CajaPage } from "./Admin/cajero/page/CajaPage";
 import { CajeroLayout } from "./Admin/cajero/layout/CajeroLayout";
 import { VentaDetallePage } from "./Admin/cajero/page/VentaDetallePage";
+import { NuevaReservaPage } from "./Admin/cajero/page/NuevaReservaPage";
 
 export const AppRouter = () => {
   return (
@@ -70,6 +71,7 @@ export const AppRouter = () => {
         <Route index element={<Navigate to="caja" replace />} />
         <Route path="caja" element={<CajaPage />} />
         <Route path="venta/:ventaId" element={<VentaDetallePage />} />
+        <Route path="reserva" element={<NuevaReservaPage />} />
       </Route>
 
       <Route path="/autorizacion-restringida" element={<SinAutorizacion />} />

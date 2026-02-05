@@ -1,8 +1,8 @@
 import { useModal } from "../../../../hooks/useModal"
 import { useBusquedaProductoNombre, useCambiarEstadoProducto, useProductoEliminar, useProductoId, useProductoQuery } from "./useProductoQuery"
 
-export const useProductoManager = ({ filtro, id, nombre, activo }) => {
-  const { anterior, siguiente, page, productoQuery } = useProductoQuery({ filtro, activo })
+export const useProductoManager = ({ filtro, id, nombre, activo, limit }) => {
+  const { anterior, siguiente, page, productoQuery } = useProductoQuery({ filtro, activo, limit })
   const productoBusqueda = useBusquedaProductoNombre(nombre)
   const modal = useModal()
   const { producto, isLoadingProducto: isLoadingProducto, isErrorProducto: isErrorProducto } = useProductoId(id)

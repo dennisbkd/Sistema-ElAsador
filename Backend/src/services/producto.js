@@ -12,7 +12,7 @@ export class ProductoServicio {
   // obtener productos
   async obtenerProductos ({ offset, limit, filtros }) {
     const where = {}
-    if (filtros.categoriaId) {
+    if (filtros.categoriaId !== 'undefined' && filtros.categoriaId !== undefined && filtros.categoriaId !== 'null') {
       where.categoriaId = filtros.categoriaId
     }
 
