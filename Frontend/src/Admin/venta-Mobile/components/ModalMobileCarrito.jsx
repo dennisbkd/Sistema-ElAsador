@@ -47,7 +47,7 @@ export const ModalMobileCarrito = ({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-40 h-[100vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-40 min-h-dvh flex flex-col"
           >
             {/* Header del modal - FIJADO ARRIBA */}
             <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4">
