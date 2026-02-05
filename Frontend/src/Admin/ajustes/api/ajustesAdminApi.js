@@ -17,8 +17,8 @@ export const agregarProductoAPedidoMesero = async ({ventaId, detalle})=>{
   return res.data
 }
 
-export const asignarReservaAMesero = async (ventaId, usuarioId)=>{
-  const res = await instancia.post(`/admin/venta-admin/${ventaId}/asignar-reserva-mesero?usuarioId=${usuarioId}`)
+export const asignarReservaAMesero = async ({ventaId, body})=>{
+  const res = await instancia.post(`/admin/venta-admin/${ventaId}/asignar-reserva-mesero`, body)
   return res.data
 }
 

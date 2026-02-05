@@ -21,7 +21,7 @@ export class VentasAdminServicio {
 
   async obtenerVentasAdmin ({ filtros, page }) {
     const where = filtros?.filtroEstado && filtros?.filtroEstado !== 'undefined' ? { estado: filtros.filtroEstado } : {}
-    where.tipo = filtros?.tipoVenta && filtros?.tipoVenta !== 'undefined' ? filtros.tipoVenta : { [Op.in]: ['NORMAL', 'RESERVA'] }
+    where.tipo = filtros?.tipoVenta && filtros?.tipoVenta !== 'undefined' ? filtros.tipoVenta : { [Op.in]: ['NORMAL', 'RESERVA', 'LLEVAR'] }
     try {
       // 1. Primero obtener las ventas del día
       const ventasHoy = await this.modeloVenta.findAll({
@@ -91,7 +91,7 @@ export class VentasAdminServicio {
     return await this.ventaServicio.agregarProductoAVenta({ ventaId, body, io })
   }
 
-  async asignarReservaAMesero ({ ventaId, usuarioId, io }) {
+  async asignarReservaAMesero ({ ventaId, body, io }) {
     // Lógica para asignar una reserva a un mesero
     const transaction = await sequelize.transaction()
     try {
@@ -107,15 +107,16 @@ export class VentasAdminServicio {
       if (['PAGADO', 'LISTO'].includes(venta.estado)) {
         throw new VentaErrorComun('No se puede asignar una reserva que ya fue pagada o esta lista')
       }
-      if (venta.usuarioId === usuarioId) {
+      if (venta.usuarioId === body.usuarioId) {
         throw new VentaErrorComun('La reserva ya se encuentra asignada a este mesero')
       }
-      venta.usuarioId = usuarioId
+      venta.usuarioId = body.usuarioId
+      venta.nroMesa = body.nroMesa
       await venta.save({ transaction })
       await transaction.commit()
       // notificar al mesero asignado
       if (io) {
-        io.to(`usuario_${usuarioId}`).emit('nueva_reserva_asignada', { codigo: venta.codigo, cliente: venta.clienteNombre })
+        io.to(`usuario_${body.usuarioId}`).emit('estado_venta_cambiado', { codigo: venta.codigo, cliente: venta.clienteNombre })
       }
       return { mensaje: 'Reserva asignada al mesero correctamente' }
     } catch (error) {
@@ -262,7 +263,6 @@ export class VentasAdminServicio {
 
   // cambiar estado de la venta ya sea de PENDIENTE a LISTO o de LISTO a PAGADO
   async cambiarEstadoVenta ({ ventaId, body, io }) {
-    console.log('cambiarEstadoVenta llamado con:', ventaId, body)
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
