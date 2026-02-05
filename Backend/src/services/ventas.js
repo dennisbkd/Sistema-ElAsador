@@ -384,7 +384,7 @@ export class VentaServicio {
   async imprimirTicketCocina ({ ventaId }) {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt'],
+        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt', 'tipo'],
         include: [{
           model: this.modeloDetalle,
           attributes: ['cantidad', 'observaciones'],
@@ -404,9 +404,10 @@ export class VentaServicio {
       })
       const DtoTicketCocina = {
         codigo: venta.codigo,
-        mesa: venta.nroMesa,
+        mesa: venta.nroMesa || 'No asignada',
         cliente: venta.clienteNombre || 'Sin nombre',
         mesero: venta.Usuario?.nombre || 'Desconocido',
+        tipo: venta.tipo,
         fecha,
         hora,
         items: venta.DetallePedidos.map(item => ({
