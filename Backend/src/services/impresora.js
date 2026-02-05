@@ -133,16 +133,32 @@ export class ImpresoraServicio {
       const stream = fs.createWriteStream(this.ticketPath)
       doc.pipe(stream)
       // ===== CONTENIDO =====
-      doc
-        .fontSize(14)
-        .text('PEDIDO COCINA', { align: 'center' })
-      doc.moveDown()
-      doc.fontSize(12)
-        .text(`Venta: ${venta.codigo}`)
-        .text(`Mesa: ${venta.mesa}`)
-        .text(`Mesero: ${venta.mesero}`)
-      doc.text(`Fecha: ${venta.fecha}`)
-      doc.text(`Hora: ${venta.hora}`)
+      if (venta.tipo === 'RESERVA') {
+        doc.fontSize(14).text('RESERVA COCINA', { align: 'center' })
+        doc.text(`Venta: ${venta.codigo}`)
+        doc.text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+        doc.text(`Hora: ${venta.hora}`)
+      }
+      if (venta.tipo === 'LLEVAR') {
+        doc.fontSize(14).text('PEDIDO PARA LLEVAR', { align: 'center' })
+        doc.moveDown()
+        doc.fontSize(12)
+          .text(`Venta: ${venta.codigo}`)
+          .text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+        doc.text(`Hora: ${venta.hora}`)
+        doc.moveDown()
+      }
+      if (venta.tipo === 'NORMAL') {
+        doc
+          .fontSize(14)
+          .text('PEDIDO COCINA', { align: 'center' })
+        doc.moveDown()
+        doc.fontSize(12)
+          .text(`Venta: ${venta.codigo}`)
+          .text(`Mesa: ${venta.mesa}`)
+          .text(`Mesero: ${venta.mesero}`)
+        doc.text(`Hora: ${venta.hora}`)
+      }
       doc.moveDown()
       doc.text('--------------------------------')
       doc.moveDown()
@@ -191,6 +207,8 @@ export class ImpresoraServicio {
         doc.moveDown()
       })
       doc.moveDown()
+      doc.text('------------', { align: 'center' })
+
       doc.end()
 
       stream.on('finish', resolve)

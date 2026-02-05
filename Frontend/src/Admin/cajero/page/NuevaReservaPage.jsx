@@ -11,6 +11,7 @@ import { CategoriasFiltro } from "../components/reserva/CategoriasFiltro"
 import { useVentaMobileManager } from "../../venta-Mobile/hooks/useVentaMobileManager"
 import { BotonAccion } from "../../../ui/boton/BotonAccion"
 import { ChevronLeft } from "lucide-react"
+import { useSocketMesero } from "../../../hooks/useSocketMesero"
 
 export const NuevaReservaPage = () => {
   const [nombreBusqueda, setNombreBusqueda] = useState('')
@@ -23,9 +24,10 @@ export const NuevaReservaPage = () => {
     clienteNombre: '',
     nroMesa: '',
     fechaReserva: '',
-    horaReserva: '19:00',
+    horaReserva: '',
     observaciones: ''
   })
+  const { isConnected } = useSocketMesero()
 
   // Hook para manejar carrito
   const {
@@ -54,13 +56,6 @@ export const NuevaReservaPage = () => {
         return
       }
 
-      // Combinar fecha y hora
-      const hoy = new Date().toLocaleDateString().split('/')
-      if (!reservaData.fechaReserva) {
-        reservaData.fechaReserva = `${hoy[2]}-${hoy[1].padStart(2, '0')}-${hoy[0].padStart(2, '0')}`
-      }
-      const fechaCompleta = `${reservaData.fechaReserva}T${reservaData.horaReserva}`
-
       // Preparar datos para el backend
       const detalle = Object.values(carrito).map(item => ({
         productoId: item.producto.id,
@@ -71,7 +66,6 @@ export const NuevaReservaPage = () => {
       const reservaPayload = {
         clienteNombre: reservaData.clienteNombre.trim(),
         nroMesa: reservaData.nroMesa ? parseInt(reservaData.nroMesa) : null,
-        fechaReserva: fechaCompleta,
         observaciones: reservaData.observaciones || '',
         tipo: 'RESERVA',
         estado: 'PENDIENTE',
@@ -86,8 +80,6 @@ export const NuevaReservaPage = () => {
       setReservaData({
         clienteNombre: '',
         nroMesa: '',
-        fechaReserva: '',
-        horaReserva: '19:00',
         observaciones: ''
       })
       setNombreBusqueda('')
@@ -113,6 +105,13 @@ export const NuevaReservaPage = () => {
           onClick={() => navigate('/cajero/caja')}
           className="mb-4"
         />
+        <div>
+          {!isConnected && (
+            <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center font-medium">
+              Conexión perdida. Algunas funciones pueden no estar disponibles.
+            </div>
+          )}
+        </div>
         <div className="flex gap-6">
           {/* Columna izquierda - Productos (2/3 del ancho) */}
           <div className="flex-1">

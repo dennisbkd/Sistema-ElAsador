@@ -1,7 +1,5 @@
 // components/ReservaSidebar.jsx
 import {
-  Calendar,
-  Clock,
   MessageSquare,
   ShoppingBag,
   Trash2,
@@ -27,18 +25,9 @@ export const ReservaSidebar = ({
   total,
   actualizarObservacion
 }) => {
-  const hoy = new Date().toISOString().split('T')[0]
-  const [showClienteInfo, setShowClienteInfo] = useState(true)
-  const [showFechaHora, setShowFechaHora] = useState(true)
+  const [showClienteInfo, setShowClienteInfo] = useState(false)
   const [showObservaciones, setShowObservaciones] = useState(false)
   const [editingObservacion, setEditingObservacion] = useState(null)
-
-  // Horas disponibles (cada hora de 5:00 a 16:00)
-  const horasDisponibles = Array.from({ length: 12 }, (_, i) => {
-    const hora = 5 + i
-    return `${hora.toString().padStart(2, '0')}:00`
-  })
-
   // Usa useCallback para handlers
   const handleObservacionChange = useCallback((e) => {
     setReservaData(prev => ({
@@ -48,11 +37,9 @@ export const ReservaSidebar = ({
   }, [setReservaData]);
 
   // Preparar fecha para mañana si hoy es el día actual
-  const fechaMinima = hoy
-  const fechaPorDefecto = hoy
 
   return (
-    <div className="sticky top-6 h-[calc(100vh-8rem)] flex flex-col bg-white rounded-xl border border-gray-200 shadow-lg">
+    <div className="sticky top-6 h-[calc(100vh-1rem)] flex flex-col bg-white rounded-xl border border-gray-200 shadow-lg">
       {/* Header del sidebar */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
@@ -131,64 +118,6 @@ export const ReservaSidebar = ({
             )}
           </AnimatePresence>
         </div>
-
-        {/* Sección de Fecha y Hora - Acordeón */}
-        <div className="mb-4">
-          <button
-            onClick={() => setShowFechaHora(!showFechaHora)}
-            className="flex items-center justify-between w-full mb-2"
-          >
-            <h3 className="font-medium text-gray-900 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              Fecha y Hora *
-            </h3>
-            {showFechaHora ? (
-              <ChevronUp className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            )}
-          </button>
-
-          <AnimatePresence>
-            {showFechaHora && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-              >
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
-                    <input
-                      type="date"
-                      value={reservaData.fechaReserva || fechaPorDefecto}
-                      onChange={(e) => setReservaData({ ...reservaData, fechaReserva: e.target.value })}
-                      min={fechaMinima}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
-                    <select
-                      value={reservaData.horaReserva || '19:00'}
-                      onChange={(e) => setReservaData({ ...reservaData, horaReserva: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    >
-                      {horasDisponibles.map((hora) => (
-                        <option key={hora} value={hora}>{hora}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="mt-3 text-xs text-gray-500">
-                  <Clock className="w-3 h-3 inline mr-1" />
-                  Horario de atención: 5:00 - 16:00
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
         {/* Sección de Observaciones - Acordeón */}
         <div className="mb-4">
           <button
@@ -242,7 +171,7 @@ export const ReservaSidebar = ({
               </button>
             </div>
 
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+            <div className="space-y-3 overflow-y-auto pr-2">
               {Object.values(carrito).map((item) => {
                 const esPreparado = item.producto.esPreparado
                 const tieneObservacion = item.observaciones
@@ -333,18 +262,6 @@ export const ReservaSidebar = ({
                 )
               })}
             </div>
-
-            {/* Resumen de productos */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Subtotal productos:</span>
-                <span className="font-medium">Bs {total.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-gray-600">Total items:</span>
-                <span className="font-medium">{totalItems}</span>
-              </div>
-            </div>
           </div>
         )}
       </div>
@@ -360,7 +277,6 @@ export const ReservaSidebar = ({
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-600">{totalItems} productos</div>
-              <div className="text-xs text-gray-500">IVA incluido</div>
             </div>
           </div>
 
@@ -404,10 +320,6 @@ export const ReservaSidebar = ({
             <div className="flex items-center gap-1">
               <ChefHat size={10} />
               <span>Los productos marcados como "Preparado" pueden tener observaciones especiales</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <AlertCircle size={10} />
-              <span>La reserva se confirmará con los datos proporcionados</span>
             </div>
           </div>
         </div>

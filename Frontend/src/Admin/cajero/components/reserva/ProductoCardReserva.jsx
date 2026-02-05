@@ -1,6 +1,6 @@
 // pages/reservas/components/ProductoCardReserva.jsx
 import { motion } from 'motion/react'
-import { ChefHat, Package, Plus, Minus, ShoppingCart, MessageSquare, X, Clock } from 'lucide-react'
+import { ChefHat, Package, Plus, Minus, ShoppingCart, MessageSquare, Clock } from 'lucide-react'
 import { useState } from 'react'
 
 export const ProductoCardReserva = ({
@@ -91,7 +91,7 @@ export const ProductoCardReserva = ({
             <span className="text-xl font-bold text-gray-900">
               Bs {precioNum.toFixed(2)}
             </span>
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${stockDisponible === 0
+            <span className={`text-xs font-bold px-2 py-1 rounded-full ${stockDisponible === 0
               ? 'bg-red-100 text-red-700'
               : stockBajo
                 ? 'bg-yellow-100 text-yellow-700'
@@ -161,18 +161,18 @@ export const ProductoCardReserva = ({
         <div className="flex items-center justify-between">
           {/* Botones de cantidad */}
           {cantidad > 0 ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => onAgregar(producto, Math.max(0, cantidad - 1))}
                 className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full 
                          hover:bg-gray-200 active:bg-gray-300 transition-colors"
               >
-                <Minus size={18} className="text-gray-700" />
+                <Minus size={16} className="text-gray-700" />
               </motion.button>
 
               <div className="min-w-[40px] text-center">
-                <span className="font-bold text-gray-900 text-xl">{cantidad}</span>
+                <span className="font-bold text-gray-900">{cantidad}</span>
               </div>
 
               <motion.button
@@ -182,7 +182,7 @@ export const ProductoCardReserva = ({
                 className="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-full 
                          hover:bg-gray-200 active:bg-gray-300 transition-colors disabled:opacity-50"
               >
-                <Plus size={18} className="text-gray-700" />
+                <Plus size={16} className="text-gray-700" />
               </motion.button>
             </div>
           ) : (
@@ -213,8 +213,8 @@ export const ProductoCardReserva = ({
             `}
           >
             <ShoppingCart size={18} />
-            <span>
-              {cantidad > 0 ? `Agregar más` : 'Agregar a reserva'}
+            <span className='font-bold'>
+              +
             </span>
           </motion.button>
         </div>
