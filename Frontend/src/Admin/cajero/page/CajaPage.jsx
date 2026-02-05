@@ -198,7 +198,7 @@ export const CajaPage = () => {
       </div>
       {/* Botón flotante para nueva venta/reserva */}
       <button
-        onClick={() => alert('Funcionalidad de nueva reserva no implementada')}
+        onClick={() => navigate('/cajero/reserva')}
         className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-95 transition-all duration-200 flex items-center gap-2"
       >
         <Plus className="w-6 h-6" />
