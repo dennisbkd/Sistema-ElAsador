@@ -42,6 +42,7 @@ export const CajaVentaCard = ({ venta, onVerDetalle, onCobrar }) => {
                 <EstadoIcon className="inline-block w-3 h-3 mr-1" />
                 {venta.estado}
               </span>
+              <span className='font-bold'>{venta.tipo}</span>
             </div>
             <p className="text-sm text-gray-600">
               {venta.fecha} • {venta.hora} • Mesa {venta.mesa}

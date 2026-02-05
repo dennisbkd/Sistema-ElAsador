@@ -1,17 +1,32 @@
 // pages/cajero/VentaDetallePage.jsx
 import { useParams, useNavigate } from 'react-router'
-import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw } from 'lucide-react'
+import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw, User, UserPlus, Table } from 'lucide-react'
 import { VentaInfoGeneral } from '../components/detalleComponents/VentaInfoGeneral'
 import { VentaProductosList } from '../components/detalleComponents/VentaProductosList'
 import { useAjusteVentaIdManager } from '../../ajustes/hooks/useAjusteVentaIdManager'
 import { useAjustesManager } from '../../ajustes/hooks/useAjustesManager'
+import { UsuarioFiltro } from '../components/reserva/UsuarioFiltro'
+import { useState } from 'react'
+import { AsignarMeseroModal } from '../components/detalleComponents/AsignarMeseroModal'
+import { useCajaManager } from '../hooks/useCajaManager'
 
 export const VentaDetallePage = () => {
   const { ventaId } = useParams()
   const navigate = useNavigate()
+  const [showAsignarMesero, setShowAsignarMesero] = useState(false)
 
   const { isLoading, error, venta } = useAjusteVentaIdManager(ventaId)
   const { imprimirVenta, isPendingImprimir, imprimirComandaCocina } = useAjustesManager({})
+  const { asignarMeseroPedido, isPending: isAsignando } = useCajaManager()
+
+  const handleAsignarMesero = async (datos) => {
+    asignarMeseroPedido({
+      ventaId: Number(ventaId),
+      usuarioId: Number(datos.meseroId),
+      nroMesa: datos.nroMesa
+    })
+    setShowAsignarMesero(false)
+  }
 
   if (isLoading) {
     return (
@@ -45,7 +60,6 @@ export const VentaDetallePage = () => {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -67,12 +81,21 @@ export const VentaDetallePage = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="w-4 h-4" />
-                  <span>Mesa {venta.nroMesa}</span>
+                  <span>Mesa {venta.nroMesa || 'Sin asignar'}</span>
                 </div>
+                {venta.mesero && (
+                  <div className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">{venta.mesero}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <DollarSign className="w-4 h-4" />
                   <span className="font-medium">Bs {parseFloat(venta.total).toFixed(2)}</span>
                 </div>
+                {/* tipo de venta */}
+                <span className="px-2 py-1 bg-green-100 text-gray-800 text-xs font-medium rounded-full">{venta.tipo}</span>
+
               </div>
             </div>
           </div>
@@ -91,6 +114,29 @@ export const VentaDetallePage = () => {
               Imprimir
               Ticket Cocina
             </button>
+
+            {/* Botón para abrir modal de asignación */}
+            {venta.tipo === 'RESERVA' && venta.estado === 'PENDIENTE' && (
+              <button
+                onClick={() => setShowAsignarMesero(true)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${venta.mesero
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+              >
+                {venta.mesero ? (
+                  <>
+                    <User className="w-4 h-4" />
+                    <span>Mesero: {venta.mesero}</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Asignar Mesero</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -137,9 +183,34 @@ export const VentaDetallePage = () => {
                     : 'Venta cancelada'}
               </span>
             </div>
+
+            {/* Info adicional */}
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              {venta.nroMesa && (
+                <div className="flex items-center gap-1">
+                  <Table className="w-4 h-4" />
+                  <span>Mesa {venta.nroMesa}</span>
+                </div>
+              )}
+              {venta.mesero && (
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{venta.mesero}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de asignación */}
+      <AsignarMeseroModal
+        isOpen={showAsignarMesero}
+        onClose={() => setShowAsignarMesero(false)}
+        venta={venta}
+        onAsignarMesero={handleAsignarMesero}
+        isAsignando={isAsignando}
+      />
+    </div >
   )
 }
