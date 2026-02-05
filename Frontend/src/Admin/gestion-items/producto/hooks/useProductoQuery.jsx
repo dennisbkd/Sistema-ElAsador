@@ -4,11 +4,11 @@ import { busquedaProductoNombre, cambiarEstadoProducto, crearProducto, editarPro
 import { useEffect } from "react"
 import toast from "react-hot-toast"
 
-export const useProductoQuery = ({ filtro, activo }) => {
+export const useProductoQuery = ({ filtro, activo, limit = 5 }) => {
   const [page, setPage] = useState(1)
   const productoQuery = useQuery({
-    queryKey: ["productos", { page, filtro, activo }],
-    queryFn: () => obtenerProductos({ filtroCategoria: filtro, page, filtroActivo: activo }),
+    queryKey: ["productos", { page, filtro, activo, limit }],
+    queryFn: () => obtenerProductos({ filtroCategoria: filtro, page, filtroActivo: activo, limit }),
     staleTime: 1000 * 60 * 5, // 5 minutos
   })
   const siguiente = () => {
