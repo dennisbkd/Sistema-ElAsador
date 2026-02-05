@@ -66,7 +66,7 @@ export class ControladorVentaAdmin {
 
   asignarReservaAMesero = this.#manejarRespuesta((req) => this.ventasAdminServicio.asignarReservaAMesero({
     ventaId: req.params.id,
-    usuarioId: req.query.usuarioId,
+    body: req.body,
     io: req.app.get('io')
   }))
 

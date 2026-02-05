@@ -292,6 +292,9 @@ export class VentaServicio {
             model: this.modeloProducto,
             attributes: ['nombre']
           }]
+        }, {
+          model: this.modeloUsuario,
+          attributes: ['nombre']
         }]
       })
       if (!venta) {
@@ -308,6 +311,8 @@ export class VentaServicio {
         clienteNombre: venta.clienteNombre ?? '',
         total: venta.total,
         estado: venta.estado,
+        tipo: venta.tipo,
+        mesero: venta.Usuario?.nombre || 'Desconocido',
         total_items: venta.DetallePedidos.length ?? 0,
         productos: Object.values(dataAgrupada(venta.DetallePedidos)),
         observaciones: venta.observaciones ?? '',
@@ -384,7 +389,7 @@ export class VentaServicio {
   async imprimirTicketCocina ({ ventaId }) {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt', 'tipo'],
+        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt', 'tipo', 'observaciones'],
         include: [{
           model: this.modeloDetalle,
           attributes: ['cantidad', 'observaciones'],
@@ -410,6 +415,7 @@ export class VentaServicio {
         tipo: venta.tipo,
         fecha,
         hora,
+        observaciones: venta.observaciones || null,
         items: venta.DetallePedidos.map(item => ({
           nombre: item.Producto?.nombre || 'Producto Desconocido',
           cantidad: Number(item.cantidad),

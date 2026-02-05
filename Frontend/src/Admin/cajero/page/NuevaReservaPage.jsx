@@ -16,6 +16,7 @@ import { useSocketMesero } from "../../../hooks/useSocketMesero"
 export const NuevaReservaPage = () => {
   const [nombreBusqueda, setNombreBusqueda] = useState('')
   const [categoriaId, setCategoriaId] = useState(null)
+  const [tipoVenta, setTipoVenta] = useState('RESERVA')
   const navigate = useNavigate()
 
 
@@ -66,8 +67,8 @@ export const NuevaReservaPage = () => {
       const reservaPayload = {
         clienteNombre: reservaData.clienteNombre.trim(),
         nroMesa: reservaData.nroMesa ? parseInt(reservaData.nroMesa) : null,
-        observaciones: reservaData.observaciones || '',
-        tipo: 'RESERVA',
+        observaciones: reservaData.observaciones || null,
+        tipo: tipoVenta,
         estado: 'PENDIENTE',
         detalle
       }
@@ -96,15 +97,60 @@ export const NuevaReservaPage = () => {
       className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100"
     >
       {/* Contenido principal */}
-      <div className="w-full mx-auto p-6">
+      <div className="w-full mx-auto p-4">
         {/* retroceder a la anterior page */}
-        <BotonAccion
-          label={'Volver'}
-          icon={ChevronLeft}
-          variant="edit"
-          onClick={() => navigate('/cajero/caja')}
-          className="mb-4"
-        />
+        <div className="w-full flex items-center justify-between">
+          <BotonAccion
+            label={'Volver'}
+            icon={ChevronLeft}
+            variant="edit"
+            onClick={() => navigate('/cajero/caja')}
+            className="mb-2"
+          />
+          <div className="flex gap-3 p-1 bg-gray-100 rounded-xl w-fit">
+            <button
+              className={`px-6 py-3 rounded-lg flex items-center justify-center gap-2 min-w-[120px]
+      transition-all duration-200 font-medium text-sm
+      ${tipoVenta === 'RESERVA'
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md shadow-green-200/50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-sm border border-gray-200'
+                }`}
+              onClick={() => setTipoVenta('RESERVA')}
+            >
+              <svg
+                className={`w-5 h-5 ${tipoVenta === 'RESERVA' ? 'text-white' : 'text-gray-400'}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>RESERVA</span>
+            </button>
+
+            <button
+              className={`px-6 py-3 rounded-lg flex items-center justify-center gap-2 min-w-[120px]
+      transition-all duration-200 font-medium text-sm
+      ${tipoVenta === 'LLEVAR'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-blue-200/50'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 hover:shadow-sm border border-gray-200'
+                }`}
+              onClick={() => setTipoVenta('LLEVAR')}
+            >
+              <svg
+                className={`w-5 h-5 ${tipoVenta === 'LLEVAR' ? 'text-white' : 'text-gray-400'}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span>LLEVAR</span>
+            </button>
+          </div>
+        </div>
         <div>
           {!isConnected && (
             <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-center font-medium">
@@ -157,6 +203,7 @@ export const NuevaReservaPage = () => {
           {/* Columna derecha - Sidebar de reserva (1/3 del ancho) */}
           <div className="w-96 flex-shrink-0">
             <ReservaSidebar
+              tipoVenta={tipoVenta}
               reservaData={reservaData}
               setReservaData={setReservaData}
               carrito={carrito}

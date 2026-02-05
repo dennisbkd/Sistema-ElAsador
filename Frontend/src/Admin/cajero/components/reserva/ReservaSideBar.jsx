@@ -23,7 +23,8 @@ export const ReservaSidebar = ({
   isPending,
   totalItems,
   total,
-  actualizarObservacion
+  actualizarObservacion,
+  tipoVenta
 }) => {
   const [showClienteInfo, setShowClienteInfo] = useState(false)
   const [showObservaciones, setShowObservaciones] = useState(false)
@@ -44,7 +45,7 @@ export const ReservaSidebar = ({
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Reserva</h2>
+            <h2 className="text-xl font-bold text-gray-900">{tipoVenta}</h2>
             <div className="flex items-center gap-2 mt-1">
               <ShoppingBag className="w-4 h-4 text-gray-500" />
               <span className="text-sm text-gray-600">
@@ -100,19 +101,21 @@ export const ReservaSidebar = ({
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mesa
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={reservaData.nroMesa || ''}
-                      onChange={(e) => setReservaData({ ...reservaData, nroMesa: e.target.value || null })}
-                      placeholder="Número"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                    />
-                  </div>
+                  {tipoVenta !== 'LLEVAR' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mesa
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={reservaData.nroMesa || ''}
+                        onChange={(e) => setReservaData({ ...reservaData, nroMesa: e.target.value || null })}
+                        placeholder="Número"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             )}

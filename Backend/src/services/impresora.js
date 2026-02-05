@@ -138,6 +138,9 @@ export class ImpresoraServicio {
         doc.text(`Venta: ${venta.codigo}`)
         doc.text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
         doc.text(`Hora: ${venta.hora}`)
+        if (venta.observaciones) {
+          doc.text(`Observacion: ${venta.observaciones || 'Sin observaciones'}`)
+        }
       }
       if (venta.tipo === 'LLEVAR') {
         doc.fontSize(14).text('PEDIDO PARA LLEVAR', { align: 'center' })
@@ -146,6 +149,9 @@ export class ImpresoraServicio {
           .text(`Venta: ${venta.codigo}`)
           .text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
         doc.text(`Hora: ${venta.hora}`)
+        if (venta.observaciones) {
+          doc.text(`Observacion: ${venta.observaciones || 'Sin observaciones'}`)
+        }
         doc.moveDown()
       }
       if (venta.tipo === 'NORMAL') {
