@@ -25,7 +25,7 @@ export const CajeroLayout = () => {
   const usuario = JSON.parse(localStorage.getItem('usuario')) || {}
   const navigate = useNavigate()
 
-  const { data: cajaData, isLoading, error: queryError, refetch } = useCajaQueryObtenerAbierta()
+  const { data: cajaData, isLoading, error: queryError } = useCajaQueryObtenerAbierta()
   const { abrirCaja, isPending } = useCajaManager()
 
   useEffect(() => {
@@ -50,7 +50,7 @@ export const CajeroLayout = () => {
 
     try {
       abrirCaja({ montoInicial: monto })
-      refetch() // Refrescar para que se actualice el estado
+      window.location.reload() // Recargar para actualizar el estado de la caja
     } catch (error) {
       setError(error.message || 'Error al abrir la caja')
       setIsAbriendo(false)
