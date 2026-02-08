@@ -11,16 +11,19 @@ import {
   CheckCircle,
   XCircle,
   LogOut,
-  User
+  User,
+  Home
 } from 'lucide-react'
 import { useCajaQueryObtenerAbierta } from '../hooks/useCajaQuery'
 import { useCajaManager } from '../hooks/useCajaManager'
+import { useNavigate } from 'react-router'
 
 export const CajeroLayout = () => {
   const [montoInicial, setMontoInicial] = useState('0.00')
   const [isAbriendo, setIsAbriendo] = useState(false)
   const [error, setError] = useState('')
   const usuario = JSON.parse(localStorage.getItem('usuario')) || {}
+  const navigate = useNavigate()
 
   const { data: cajaData, isLoading, error: queryError, refetch } = useCajaQueryObtenerAbierta()
   const { abrirCaja, isPending } = useCajaManager()
@@ -291,6 +294,18 @@ export const CajeroLayout = () => {
           </div>
 
           <div className="flex items-center gap-4">
+            {/* si es admin volver al home */}
+            {usuario.rol === 'ADMINISTRADOR' && (
+              <div className="flex items-center gap-2 cursor-pointer" >
+                <button
+                  onClick={() => navigate('/home')}
+                  className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                >
+                  <Home className="w-4 h-4" />
+                  <span className="text-sm font-medium">Inicio</span>
+                </button>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <div className="p-2 bg-gray-100 rounded-lg">
                 <User className="w-5 h-5 text-gray-600" />
