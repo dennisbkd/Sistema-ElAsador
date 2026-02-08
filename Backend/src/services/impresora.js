@@ -7,6 +7,8 @@ export class ImpresoraServicio {
   constructor () {
     this.pageWidth = 226 // Ancho de página en puntos (80mm)
     this.ticketPath = path.join(process.cwd(), 'ticket.pdf')
+    this.isPrinting = false // 🔒 Flag para controlar impresión
+    this.printQueue = [] // Cola de impresión
   }
 
   async imprimirVenta (venta) {
@@ -27,10 +29,36 @@ export class ImpresoraServicio {
 
   async imprimirTicketCocina (venta) {
     try {
+      // Si ya se está imprimiendo, agregar a la cola
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({ venta, resolve })
+        })
+      }
+
+      // Bloquear impresora
+      this.isPrinting = true
+
       await this.generarPDFCocina(venta)
       await this.imprimirPDF()
+      // Desbloquear y procesar siguiente en cola
+      this.isPrinting = false
+      this.processNextInQueue()
     } catch (error) {
       console.error('❌ Error al imprimir ticket de cocina:', error)
+      this.isPrinting = false
+      this.processNextInQueue()
+    }
+  }
+
+  processNextInQueue () {
+    if (this.printQueue.length > 0) {
+      const next = this.printQueue.shift()
+      setTimeout(() => {
+        this.imprimirTicketCocina(next.venta)
+          .then(() => next.resolve())
+          .catch(() => next.resolve())
+      }, 1000) // Esperar 1 segundo entre impresiones
     }
   }
 
