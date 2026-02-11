@@ -65,7 +65,7 @@ export const ModalMobileCarrito = ({
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 200 }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
             className="fixed inset-0 z-50 flex flex-col bg-white"
             style={{ maxHeight: '100dvh' }}
           >
@@ -113,7 +113,7 @@ export const ModalMobileCarrito = ({
                             <img
                               src={item.producto.imagen.startsWith('http')
                                 ? getProductImageUrl(item.producto.imagen)
-                                : `${import.meta.env.VITE_API_URL}${item.producto.imagen}`
+                                : `${import.meta.env.VITE_API_URL}${getProductImageUrl(item.producto.imagen)}`
                               }
                               alt={item.producto.nombre}
                               className="w-full h-full object-cover"

@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { SideBarCabecera } from './SideBarCabecera';
 import { MobileMenuBoton } from './MobileMenuBoton';
 import { MenuItem } from './MenuItem';
+import { CerrarSesion } from '../../components/CerrarSesion';
 
 export const SideBar = () => {
   const location = useLocation()
@@ -103,6 +104,10 @@ export const SideBar = () => {
             />
           ))}
         </nav>
+        <CerrarSesion
+          variant='button'
+          className='mb-4 px-4 mx-4'
+        />
       </motion.div>
     </>
 
