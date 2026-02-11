@@ -54,6 +54,10 @@ export class ControladorVentaAdmin {
     }
   }))
 
+  obtenerVentasPorMesas = this.#manejarRespuesta((req) => this.ventasAdminServicio.obtenerVentasPorMesas({
+    filtro: req.query.filtroMesaNombre
+  }))
+
   obtenerVentaPorId = this.#manejarRespuesta((req) => this.ventasAdminServicio.obtenerVentaPorId({
     ventaId: req.params.id
   }))
@@ -94,4 +98,6 @@ export class ControladorVentaAdmin {
   imprimirVenta = this.#manejarRespuesta((req) => this.ventasAdminServicio.imprimirFacturaVenta({
     ventaId: req.params.id
   }))
+
+  obtenerTotalesDiarios = this.#manejarRespuesta((req) => this.ventasAdminServicio.obtenerTotalesDiarios())
 }

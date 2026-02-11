@@ -83,6 +83,57 @@ export class VentasAdminServicio {
     }
   }
 
+  async obtenerVentasPorMesas ({ filtro }) {
+    try {
+      const filtroNumero = parseInt(filtro)
+      const esNumero = !isNaN(filtroNumero)
+      // Si el filtro es un número, buscar por nroMesa, si no, buscar por clienteNombre
+      const ventasMesas = await this.modeloVenta.findAll({
+        where: {
+          [Op.or]: [
+            esNumero ? { nroMesa: filtroNumero } : null,
+            {
+              clienteNombre: {
+                [Op.like]: `%${filtro}%`
+              }
+            }
+          ].filter(condicion => condicion !== null),
+          createdAt: {
+            [Op.between]: [
+              horaInicial,
+              horaFinal
+            ]
+          }
+        }
+      })
+      if (ventasMesas.length === 0) return []
+      const ventasFormateadas = ventasMesas.map(venta => {
+        const fecha = venta.createdAt.toLocaleDateString('es-BO')
+        const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+        return {
+          id: venta.id,
+          codigo: venta.codigo,
+          nroMesa: venta.nroMesa,
+          mesero: venta.Usuario?.nombre,
+          clienteNombre: venta.clienteNombre ?? '',
+          total: Number(venta.total),
+          tipo: venta.tipo,
+          estado: venta.estado,
+          // total_items: venta.DetallePedidos.length ?? 0,
+          observaciones: venta.observaciones ?? '',
+          fecha,
+          hora
+        }
+      })
+      return ventasFormateadas
+    } catch (error) {
+      throw new VentaErrorComun('Error al obtener las ventas por mesas')
+    }
+  }
+
   async obtenerVentaPorId ({ ventaId }) {
     return await this.ventaServicio.obtenerVentaId({ ventaId })
   }
@@ -294,5 +345,45 @@ export class VentasAdminServicio {
 
   async imprimirFacturaVenta ({ ventaId }) {
     return await this.ventaServicio.imprimirVenta({ ventaId })
+  }
+
+  async obtenerTotalesDiarios () {
+    try {
+      const totales = await this.modeloVenta.findAndCountAll({
+        where: {
+          createdAt: {
+            [Op.between]: [
+              horaInicial,
+              horaFinal
+            ]
+          }
+        },
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('total')), 'totalDiario'],
+          [sequelize.literal("SUM(IF(estado = 'PENDIENTE', 1, 0))"), 'totalPendientes'],
+          [sequelize.literal("SUM(IF(estado = 'PAGADO', 1, 0))"), 'totalPagados'],
+          [sequelize.literal("SUM(IF(estado = 'CANCELADO', 1, 0))"), 'totalCancelados'],
+          [sequelize.literal("SUM(IF(tipo = 'RESERVA', 1, 0))"), 'totalReservas'],
+          [sequelize.literal("SUM(IF(tipo = 'LLEVAR', 1, 0))"), 'totalLlevar'],
+          [sequelize.literal("SUM(IF(tipo = 'LLEVAR', total, 0))"), 'montoLlevar'],
+          [sequelize.literal("SUM(IF(estado = 'PENDIENTE', total, 0))"), 'montoPendiente'],
+          [sequelize.literal("SUM(IF(estado = 'PAGADO', total, 0))"), 'montoPagado']
+        ]
+      })
+      return {
+        totalPedidos: totales.count,
+        montoDiario: parseFloat(totales.rows[0].dataValues.totalDiario) || 0,
+        totalPendientes: parseInt(totales.rows[0].dataValues.totalPendientes) || 0,
+        totalPagados: parseInt(totales.rows[0].dataValues.totalPagados) || 0,
+        totalCancelados: parseInt(totales.rows[0].dataValues.totalCancelados) || 0,
+        totalReservas: parseInt(totales.rows[0].dataValues.totalReservas) || 0,
+        totalLlevar: parseInt(totales.rows[0].dataValues.totalLlevar) || 0,
+        montoPendiente: parseFloat(totales.rows[0].dataValues.montoPendiente) || 0,
+        montoPagado: parseFloat(totales.rows[0].dataValues.montoPagado) || 0,
+        montoLlevar: parseFloat(totales.rows[0].dataValues.montoLlevar) || 0
+      }
+    } catch (error) {
+      throw new VentaErrorComun('Error al obtener los totales diarios')
+    }
   }
 }

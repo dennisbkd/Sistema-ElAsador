@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { ChefHat, Package, Plus, Minus, ShoppingCart, MessageSquare, X } from 'lucide-react'
+import { getProductImageUrl } from '../../../utils/imageURL'
 
 export const ProductoCardMobile = ({ producto, onAgregar, cantidad = 0, observacion = '', actualizarObservacion }) => {
   const precioNum = parseFloat(producto.precio)
@@ -9,9 +10,7 @@ export const ProductoCardMobile = ({ producto, onAgregar, cantidad = 0, observac
   const disponible = stockDisponible > 0
 
   // Manejo de imagen
-  const pathImagen = producto.imagen
-    ? (producto.imagen.startsWith('http') ? producto.imagen : `${import.meta.env.VITE_API_URL}${producto.imagen}`)
-    : 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&auto=format&fit=crop'
+  const pathImagen = getProductImageUrl(producto.imagen)
 
   const getEstadoStock = () => {
     if (stockDisponible === 0) return { color: 'bg-red-500', texto: 'Agotado' }

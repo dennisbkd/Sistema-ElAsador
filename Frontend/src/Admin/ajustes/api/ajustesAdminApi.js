@@ -46,3 +46,13 @@ export const imprimirVenta = async (ventaId) => {
   const res = await instancia.post(`/admin/venta-admin/${ventaId}/imprimir-venta`)
   return res.data
 }
+
+export const obtenerVentasPorMesas = async ({ filtroMesaNombre }) => {
+  const res = await instancia.get(`/admin/venta-admin/ventas-por-mesas?filtroMesaNombre=${filtroMesaNombre}`)
+  return res.data
+}
+
+export const obtenerTotalesDiarios = async()=>{
+  const res = await instancia.get('/admin/venta-admin/totales-del-dia')
+  return res.data
+}

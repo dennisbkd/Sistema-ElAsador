@@ -1,11 +1,10 @@
 // pages/cajero/VentaDetallePage.jsx
-import { useParams, useNavigate } from 'react-router'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router'
 import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw, User, UserPlus, Table } from 'lucide-react'
 import { VentaInfoGeneral } from '../components/detalleComponents/VentaInfoGeneral'
 import { VentaProductosList } from '../components/detalleComponents/VentaProductosList'
 import { useAjusteVentaIdManager } from '../../ajustes/hooks/useAjusteVentaIdManager'
 import { useAjustesManager } from '../../ajustes/hooks/useAjustesManager'
-import { UsuarioFiltro } from '../components/reserva/UsuarioFiltro'
 import { useState } from 'react'
 import { AsignarMeseroModal } from '../components/detalleComponents/AsignarMeseroModal'
 import { useCajaManager } from '../hooks/useCajaManager'
@@ -14,6 +13,9 @@ export const VentaDetallePage = () => {
   const { ventaId } = useParams()
   const navigate = useNavigate()
   const [showAsignarMesero, setShowAsignarMesero] = useState(false)
+  const [searchParams] = useSearchParams()
+  const page = searchParams.get('page')
+  const location = useLocation().state
 
   const { isLoading, error, venta } = useAjusteVentaIdManager(ventaId)
   const { imprimirVenta, isPendingImprimir, imprimirComandaCocina } = useAjustesManager({})
@@ -26,6 +28,13 @@ export const VentaDetallePage = () => {
       nroMesa: datos.nroMesa
     })
     setShowAsignarMesero(false)
+  }
+
+  const volverACaja = () => {
+    const state = location?.state || {}
+    navigate(page ?
+      `/cajero/caja?page=${page}&filtroEstado=${state.filtroEstado || 'TODOS'}&filtroTipo=${state.filtroTipo || 'TODOS'}`
+      : '/cajero/caja')
   }
 
   if (isLoading) {
@@ -51,7 +60,7 @@ export const VentaDetallePage = () => {
             </div>
           </div>
           <button
-            onClick={() => navigate('/cajero/caja')}
+            onClick={volverACaja}
             className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Volver a Caja
@@ -67,7 +76,7 @@ export const VentaDetallePage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/cajero/caja')}
+              onClick={volverACaja}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-6 h-6 text-gray-600" />
