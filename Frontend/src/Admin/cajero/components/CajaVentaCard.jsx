@@ -37,15 +37,15 @@ export const CajaVentaCard = ({ venta, onVerDetalle, onCobrar }) => {
         <div className="flex justify-between items-start mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-lg text-gray-900">{venta.codigo}</h3>
+              <h3 className="font-bold text-lg text-gray-900">MESA {venta.nroMesa || 'N/A'}</h3>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${estadoInfo.color}`}>
                 <EstadoIcon className="inline-block w-3 h-3 mr-1" />
                 {venta.estado}
               </span>
-              <span className='font-bold'>{venta.tipo}</span>
+              <span className='font-bold text-gray-500'>{venta.tipo}</span>
             </div>
             <p className="text-sm text-gray-600">
-              {venta.fecha} • {venta.hora} • Mesa {venta.mesa}
+              {venta.fecha} • {venta.hora} • Codigo {venta.codigo}
             </p>
           </div>
 
