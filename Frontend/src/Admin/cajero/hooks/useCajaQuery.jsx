@@ -49,6 +49,7 @@ export const useRegistrarPago = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['caja-abierta'] })
       queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['totales-diarios'] })
       toast.success('Pago registrado con éxito')
     },
     onError: (error) => {

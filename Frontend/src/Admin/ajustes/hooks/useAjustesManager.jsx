@@ -1,8 +1,10 @@
 import React from 'react'
-import { useAgregarProductoPedidoAMutation, useAjustesQuery, useCambiarEstadoVenta, useImprimirComandaCocina, useImprimirVenta } from './useAjustesQuery'
+import { useAgregarProductoPedidoAMutation, useAjustesQuery, useCambiarEstadoVenta, useImprimirComandaCocina, useImprimirVenta, useVentasPorMesas, useVentasTotalesDiarios } from './useAjustesQuery'
 
-export const useAjustesManager = ({ filtros }) => {
-  const { anteriorPagina, pedidosQuery, siguientePagina, page } = useAjustesQuery({ filtros })
+export const useAjustesManager = ({ filtros, filtroMesaNombre, pageUrl }) => {
+  const { anteriorPagina, pedidosQuery, siguientePagina, page } = useAjustesQuery({ filtros, pageUrl })
+  const { ventasPorMesas, isErrorVentasPorMesas, isLoadingVentasPorMesas } = useVentasPorMesas({ filtroMesaNombre })
+  const { isErrorTotalesDiarios, isLoadingTotalesDiarios, totalesDiarios } = useVentasTotalesDiarios()
   const agregarProductoApedido = useAgregarProductoPedidoAMutation()
   const imprimirComandaCocinaMutation = useImprimirComandaCocina()
   const imprimirVentaMutation = useImprimirVenta()
@@ -26,12 +28,17 @@ export const useAjustesManager = ({ filtros }) => {
 
   return {
     pedidos: pedidosQuery.data || [],
+    ventasEncontradas: ventasPorMesas || [],
     cargando: pedidosQuery.isLoading,
-    error: pedidosQuery.isError,
+    isLoadingVentasPorMesas,
+    error: pedidosQuery.isError || isErrorVentasPorMesas,
     page,
     isPending: agregarProductoApedido.isPending,
     isPendingImprimir: imprimirComandaCocinaMutation.isPending || imprimirVentaMutation.isPending,
     isPendingCambiarEstado: cambiarEstadoMutation.isPending,
+    isLoadingTotalesDiarios,
+    isErrorTotalesDiarios,
+    totalesDiarios,
     agregarProducto,
     imprimirComandaCocina,
     cambiarEstadoVenta,
