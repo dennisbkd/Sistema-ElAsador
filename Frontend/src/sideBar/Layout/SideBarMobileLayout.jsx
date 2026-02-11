@@ -12,6 +12,7 @@ import {
 import { BotonIcon } from '../components/BotonIcon'
 import { useNotificacion } from '../../hooks/useNotificacion'
 import { useAjustesSocket } from '../../Admin/ajustes/hooks/useAjustesSocket'
+import { CerrarSesion } from '../../components/CerrarSesion'
 
 export const SideBarMobileLayout = () => {
   const location = useLocation()
@@ -78,6 +79,9 @@ export const SideBarMobileLayout = () => {
               <p className="text-xs text-gray-500">Turno activo</p>
             </div>
           </div>
+          <CerrarSesion
+            variant='header'
+          />
         </div>
       </header>
 
