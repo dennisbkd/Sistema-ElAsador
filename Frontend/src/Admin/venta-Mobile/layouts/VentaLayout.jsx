@@ -30,7 +30,7 @@ export const VentaLayout = ({
     productosEncontrados,
     isLoadingBusqueda,
     isErrorBusqueda,
-    isErrorProducto } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce, activo: true })
+    isErrorProducto } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce, activo: true, limit: 100 })
 
   //efecto para hacer scroll al cambiar de categoria
   useEffect(() => {
