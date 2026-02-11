@@ -370,6 +370,20 @@ export class VentasAdminServicio {
           [sequelize.literal("SUM(IF(estado = 'PAGADO', total, 0))"), 'montoPagado']
         ]
       })
+      if (totales.count === 0) {
+        return {
+          totalPedidos: 0,
+          montoDiario: 0,
+          totalPendientes: 0,
+          totalPagados: 0,
+          totalCancelados: 0,
+          totalReservas: 0,
+          totalLlevar: 0,
+          montoPendiente: 0,
+          montoPagado: 0,
+          montoLlevar: 0
+        }
+      }
       return {
         totalPedidos: totales.count,
         montoDiario: parseFloat(totales.rows[0].dataValues.totalDiario) || 0,
