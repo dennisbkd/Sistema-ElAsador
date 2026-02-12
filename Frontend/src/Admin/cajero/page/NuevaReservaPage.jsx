@@ -12,11 +12,13 @@ import { useVentaMobileManager } from "../../venta-Mobile/hooks/useVentaMobileMa
 import { BotonAccion } from "../../../ui/boton/BotonAccion"
 import { ChevronLeft } from "lucide-react"
 import { useSocketMesero } from "../../../hooks/useSocketMesero"
+import { ModalMetodoPago } from "../components/reserva/ModalMetodoPago"
 
 export const NuevaReservaPage = () => {
   const [nombreBusqueda, setNombreBusqueda] = useState('')
   const [categoriaId, setCategoriaId] = useState(null)
   const [tipoVenta, setTipoVenta] = useState('RESERVA')
+  const [showModalPago, setShowModalPago] = useState(false)
   const navigate = useNavigate()
 
 
@@ -43,8 +45,23 @@ export const NuevaReservaPage = () => {
 
   // Hook para crear reserva
   const { crearVenta, isPending } = useVentaMobileManager({})
+
+  // Función para manejar la confirmación del método de pago
+  const handleConfirmarMetodoPago = (metodo) => {
+    handleCrearReserva(metodo)
+  }
+
+  const mostrarModalPago = () => {
+    if (tipoVenta === 'LLEVAR') {
+      setShowModalPago(true)
+    } else {
+      handleCrearReserva()
+    }
+  }
+
+
   // Función para crear la reserva
-  const handleCrearReserva = () => {
+  const handleCrearReserva = (metodoPago = null) => {
     try {
       // Validaciones
       if (!reservaData.clienteNombre.trim()) {
@@ -57,6 +74,11 @@ export const NuevaReservaPage = () => {
         return
       }
 
+      if (tipoVenta === 'LLEVAR' && !metodoPago) {
+        setShowModalPago(true)
+        return // Detener la ejecución hasta que se seleccione un método
+      }
+
       // Preparar datos para el backend
       const detalle = Object.values(carrito).map(item => ({
         productoId: item.producto.id,
@@ -64,17 +86,17 @@ export const NuevaReservaPage = () => {
         observaciones: item.observaciones || ''
       }))
 
+
       const reservaPayload = {
         clienteNombre: reservaData.clienteNombre.trim(),
         nroMesa: reservaData.nroMesa ? parseInt(reservaData.nroMesa) : null,
         observaciones: reservaData.observaciones || null,
         tipo: tipoVenta,
         estado: 'PENDIENTE',
-        detalle
+        detalle,
+        ...(tipoVenta === 'LLEVAR' && { metodoPago })
       }
       crearVenta(reservaPayload)
-
-      toast.success('Reserva creada exitosamente')
 
       // Limpiar todo
       limpiarCarrito()
@@ -208,7 +230,7 @@ export const NuevaReservaPage = () => {
               setReservaData={setReservaData}
               carrito={carrito}
               onLimpiarCarrito={limpiarCarrito}
-              onCrearReserva={handleCrearReserva}
+              onCrearReserva={mostrarModalPago}
               isPending={isPending}
               totalItems={totalItems}
               total={Object.values(carrito).reduce((sum, item) =>
@@ -219,6 +241,12 @@ export const NuevaReservaPage = () => {
           </div>
         </div>
       </div>
+      {/* Crear una modal para seleccionar el Metodo pago QR o Efectivo */}
+      <ModalMetodoPago
+        isOpen={showModalPago}
+        onClose={() => setShowModalPago(false)}
+        onConfirmar={handleConfirmarMetodoPago}
+      />
     </motion.div>
   )
 }
