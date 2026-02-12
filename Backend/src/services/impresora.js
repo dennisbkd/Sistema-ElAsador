@@ -13,8 +13,21 @@ export class ImpresoraServicio {
 
   async imprimirVenta (venta) {
     try {
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirVenta(venta)
+          })
+        })
+      }
+      // bloqueo de impresora
+      this.isPrinting = true
       await this.generarPDFVenta(venta)
       await this.imprimirPDF()
+      this.isPrinting = false
+      this.processNextInQueue()
       console.log('✅ Ticket de venta impreso correctamente')
     } catch (error) {
       console.error('❌ Error al imprimir ticket de venta:', error)
@@ -32,7 +45,11 @@ export class ImpresoraServicio {
       // Si ya se está imprimiendo, agregar a la cola
       if (this.isPrinting) {
         return new Promise((resolve) => {
-          this.printQueue.push({ venta, resolve })
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirTicketCocina(venta)
+          })
         })
       }
 
@@ -55,7 +72,7 @@ export class ImpresoraServicio {
     if (this.printQueue.length > 0) {
       const next = this.printQueue.shift()
       setTimeout(() => {
-        this.imprimirTicketCocina(next.venta)
+        next.imprimirFuncion()
           .then(() => next.resolve())
           .catch(() => next.resolve())
       }, 1000) // Esperar 1 segundo entre impresiones
@@ -82,10 +99,13 @@ export class ImpresoraServicio {
       doc.text('--------------------------------')
       // ===== DETALLES =====
       doc.fontSize(9)
+      console.log(venta)
       doc.text(`Venta: ${venta.codigo}`)
       doc.text(`Fecha: ${venta.fecha} ${venta.hora}`)
-      doc.text(`Mesero: ${venta.mesero}`)
-      doc.text(`Mesa: ${venta.mesa}`)
+      if (venta.tipo !== 'LLEVAR') {
+        doc.text(`Mesero: ${venta.mesero}`)
+        doc.text(`Mesa: ${venta.mesa}`)
+      }
       doc.moveDown()
       // ===== encabezado cantidad x producto PU,subtotal =====
       // guarda la posicion actual en y
