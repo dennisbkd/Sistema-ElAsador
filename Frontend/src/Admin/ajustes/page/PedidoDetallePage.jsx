@@ -33,7 +33,7 @@ export const PedidoDetallePage = () => {
   const pedidoId = useParams().pedidoId
   const navigate = useNavigate()
   const location = useLocation()
-  const { filtroEstado, filtroTipo, page } = location.state || {}
+  const { filtroEstado, filtroTipo, page, from } = location.state || {}
 
   const { venta, isLoading, isError } = useAjusteVentaIdManager(pedidoId)
   const [mostrarAnularProducto, setMostrarAnularProducto] = useState(null)
@@ -43,7 +43,7 @@ export const PedidoDetallePage = () => {
   const [devolverStock, setDevolverStock] = useState(true)
   const [mostrarAgregarProducto, setMostrarAgregarProducto] = useState(false)
   const { agregarProducto, isPending, imprimirComandaCocina, isPendingImprimir, imprimirVenta, cambiarEstadoVenta, isPendingCambiarEstado } = useAjustesManager({})
-
+  const fromVenta = !!from
 
   // Mutaciones
   const anularProductoMutation = useAnularProductoDeVenta()
@@ -101,8 +101,8 @@ export const PedidoDetallePage = () => {
   const handleAccion = (accionId) => {
     switch (accionId) {
       case 'volver':
-        navigate('/home/ajustes-venta', {
-          state: { filtroEstado, filtroTipo, page }
+        navigate(fromVenta ? from : '/home/ajustes-venta', {
+          state: { filtroEstado, filtroTipo, page, from }
         })
         break
       case 'listo':

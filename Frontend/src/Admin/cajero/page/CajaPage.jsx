@@ -31,8 +31,6 @@ export const CajaPage = () => {
   const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [busqueda, setBusqueda] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
-  const [ventaSeleccionada, setVentaSeleccionada] = useState(null)
-  const [mostrarModalPago, setMostrarModalPago] = useState(false)
   const [mostrarCerrarCaja, setMostrarCerrarCaja] = useState(false)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
@@ -47,7 +45,9 @@ export const CajaPage = () => {
     error: isError,
     refetch,
     page,
-    isLoadingVentasPorMesas
+    isLoadingVentasPorMesas,
+    imprimirVenta,
+    isPendingImprimir
   } = useAjustesManager({
     filtros: {
       filtroEstado: filtroEstadoFromUrl !== 'TODOS' ? filtroEstadoFromUrl : undefined,
@@ -60,15 +60,6 @@ export const CajaPage = () => {
     const hayBusqueda = busqueda.trim().length > 0
     return hayBusqueda ? ventasEncontradas : pedidos
   }, [busqueda, ventasEncontradas, pedidos])
-
-  // Iniciar pago de una venta
-  const iniciarPago = (venta) => {
-    setVentaSeleccionada({
-      ...venta,
-      saldoPendiente: parseFloat(venta.total)
-    })
-    setMostrarModalPago(true)
-  }
 
   // Estados disponibles
   const estados = [
@@ -177,29 +168,14 @@ export const CajaPage = () => {
               <CajaVentaCard
                 key={venta.id}
                 venta={venta}
+                isPendingImprimir={isPendingImprimir}
                 onVerDetalle={() => handleVerDetalle(venta.id)}
-                onCobrar={() => iniciarPago(venta)}
+                onImprimir={() => imprimirVenta(venta.id)}
               />
             ))}
           </div>
         )}
       </main>
-
-      {/* Modales */}
-      {mostrarModalPago && ventaSeleccionada && (
-        <ModalPago
-          venta={ventaSeleccionada}
-          onClose={() => {
-            setMostrarModalPago(false)
-            setVentaSeleccionada(null)
-          }}
-          onPagoRegistrado={() => {
-            setMostrarModalPago(false)
-            setVentaSeleccionada(null)
-            refetch()
-          }}
-        />
-      )}
 
       {mostrarCerrarCaja && (
         <ModalCerrarCaja

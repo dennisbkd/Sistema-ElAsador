@@ -9,7 +9,7 @@ import {
   Printer
 } from 'lucide-react'
 
-export const CajaVentaCard = ({ venta, onVerDetalle, onCobrar }) => {
+export const CajaVentaCard = ({ venta, onVerDetalle, onImprimir, isPendingImprimir }) => {
   const getEstadoInfo = (estado) => {
     switch (estado) {
       case 'PENDIENTE':
@@ -85,30 +85,21 @@ export const CajaVentaCard = ({ venta, onVerDetalle, onCobrar }) => {
         {/* Acciones */}
         <div className="flex gap-2">
           <button
-            onClick={onVerDetalle}
+            onClick={onImprimir}
+            disabled={isPendingImprimir}
             className="flex-1 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
           >
-            <Eye className="w-4 h-4" />
-            Ver Detalle
+            <Printer className="w-4 h-4" />
+            Imprimir Venta
           </button>
 
           {(venta.estado === 'PENDIENTE' || venta.estado === 'LISTO') && (
             <button
-              onClick={onCobrar}
+              onClick={onVerDetalle}
               className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
             >
               <DollarSign className="w-4 h-4" />
-              Cobrar
-            </button>
-          )}
-
-          {venta.estado === 'PAGADO' && (
-            <button
-              onClick={() => window.print()}
-              className="px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 flex items-center gap-2"
-            >
-              <Printer className="w-4 h-4" />
-              Reimprimir
+              Registrar Pago
             </button>
           )}
         </div>

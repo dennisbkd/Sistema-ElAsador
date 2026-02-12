@@ -1,6 +1,6 @@
 // pages/cajero/VentaDetallePage.jsx
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router'
-import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw, User, UserPlus, Table } from 'lucide-react'
+import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw, User, UserPlus, Table, FilePen, Coins } from 'lucide-react'
 import { VentaInfoGeneral } from '../components/detalleComponents/VentaInfoGeneral'
 import { VentaProductosList } from '../components/detalleComponents/VentaProductosList'
 import { useAjusteVentaIdManager } from '../../ajustes/hooks/useAjusteVentaIdManager'
@@ -8,14 +8,18 @@ import { useAjustesManager } from '../../ajustes/hooks/useAjustesManager'
 import { useState } from 'react'
 import { AsignarMeseroModal } from '../components/detalleComponents/AsignarMeseroModal'
 import { useCajaManager } from '../hooks/useCajaManager'
+import { BotonAccion } from '../../../ui/boton/BotonAccion'
+import { ModalPago } from '../components/ModalPago'
 
 export const VentaDetallePage = () => {
   const { ventaId } = useParams()
   const navigate = useNavigate()
   const [showAsignarMesero, setShowAsignarMesero] = useState(false)
+  const [showModalPago, setShowModalPago] = useState(false)
   const [searchParams] = useSearchParams()
   const page = searchParams.get('page')
   const location = useLocation().state
+  const state = location?.state || {}
 
   const { isLoading, error, venta } = useAjusteVentaIdManager(ventaId)
   const { imprimirVenta, isPendingImprimir, imprimirComandaCocina } = useAjustesManager({})
@@ -31,7 +35,6 @@ export const VentaDetallePage = () => {
   }
 
   const volverACaja = () => {
-    const state = location?.state || {}
     navigate(page ?
       `/cajero/caja?page=${page}&filtroEstado=${state.filtroEstado || 'TODOS'}&filtroTipo=${state.filtroTipo || 'TODOS'}`
       : '/cajero/caja')
@@ -110,20 +113,40 @@ export const VentaDetallePage = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button type='button' disabled={isPendingImprimir} onClick={() => imprimirVenta(ventaId)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
-              <Printer className="w-4 h-4" />
-              Imprimir
-            </button>
-            <button type='button' disabled={isPendingImprimir} onClick={() => imprimirComandaCocina(ventaId)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors">
-              {isPendingImprimir ? (
-                <RefreshCcw size={16} className='animate-spin' />
-              ) : (
-                <ChefHat className="w-4 h-4" />
-              )}
-              Imprimir
-              Ticket Cocina
-            </button>
-
+            {venta.estado !== 'PAGADO' && (
+              <BotonAccion
+                icon={Coins}
+                label={'Cobrar'}
+                onClick={() => setShowModalPago(prev => !prev)}
+              />
+            )}
+            <BotonAccion
+              icon={FilePen}
+              label={'Modificar Pedido'}
+              variant='edit'
+              onClick={() => navigate(`/home/ajustes-venta/pedido/${ventaId}`, {
+                state: {
+                  from: `/cajero/venta/${ventaId}`,
+                  filtroEstado: location?.state?.filtroEstado || 'TODOS',
+                  filtroTipo: location?.state?.filtroTipo || 'TODOS',
+                  page: page || 1
+                }
+              })}
+            />
+            <BotonAccion
+              icon={Printer}
+              label={'Imprimir Venta'}
+              onClick={() => imprimirVenta(ventaId)}
+              disabled={isPendingImprimir}
+              variant='edit'
+            />
+            <BotonAccion
+              icon={ChefHat}
+              label={'Imprimir Comanda'}
+              onClick={() => imprimirComandaCocina(ventaId)}
+              disabled={isPendingImprimir}
+              variant='edit'
+            />
             {/* Botón para abrir modal de asignación */}
             {venta.tipo === 'RESERVA' && venta.estado === 'PENDIENTE' && (
               <button
@@ -160,7 +183,7 @@ export const VentaDetallePage = () => {
 
           {/* Columna derecha - Productos */}
           <div className="space-y-6">
-            <VentaProductosList productos={venta.productos} totalItems={venta.total_items} />
+            <VentaProductosList total={venta.total} productos={venta.productos} totalItems={venta.total_items} />
 
             {/* Observaciones */}
             {venta.observaciones && (
@@ -220,6 +243,19 @@ export const VentaDetallePage = () => {
         onAsignarMesero={handleAsignarMesero}
         isAsignando={isAsignando}
       />
+      {/* Modal de pago */}
+      {
+        showModalPago && (
+          <ModalPago
+            venta={venta}
+            id={ventaId}
+            onPagoRegistrado={() => {
+              setShowModalPago(false)
+            }}
+            onClose={() => setShowModalPago(false)}
+          />
+        )
+      }
     </div >
   )
 }

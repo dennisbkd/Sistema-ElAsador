@@ -1,7 +1,7 @@
 // pages/cajero/components/VentaProductosList.jsx
 import { Package, DollarSign, Hash } from 'lucide-react'
 
-export const VentaProductosList = ({ productos, totalItems }) => {
+export const VentaProductosList = ({ productos, totalItems, total }) => {
   // Calcular total general
   const calcularTotalGeneral = () => {
     return productos.reduce((total, producto) => {
@@ -16,7 +16,7 @@ export const VentaProductosList = ({ productos, totalItems }) => {
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Package className="w-5 h-5 text-blue-600" />
             </div>
@@ -25,6 +25,7 @@ export const VentaProductosList = ({ productos, totalItems }) => {
               <p className="text-sm text-gray-600">{totalItems || productos.length} items en la venta</p>
             </div>
           </div>
+          <h2 className="text-lg font-bold text-green-600">Total: Bs {parseFloat(total).toFixed(2)}</h2>
         </div>
       </div>
 

@@ -20,7 +20,8 @@ export const ProductoCardReserva = ({
   const [nuevaObservacion, setNuevaObservacion] = useState(observacion)
 
   // Manejo de imagen
-  const pathImagen = getProductImageUrl(producto.imagen)
+  const imagen = getProductImageUrl(producto.imagen)
+  const pathImagen = imagen.startsWith('http') ? imagen : `${import.meta.env.VITE_API_URL}${imagen}`
 
   const handleAgregarObservacion = () => {
     if (nuevaObservacion.trim()) {
