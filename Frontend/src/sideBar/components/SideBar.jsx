@@ -46,7 +46,6 @@ export const SideBar = () => {
   useEffect(() => {
     const verificarMobile = () => {
       const mobile = window.innerWidth < 768
-      console.log(mobile)
       setMobile(mobile)
       setAbierto(!mobile)
     }

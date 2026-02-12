@@ -21,7 +21,8 @@ const ventaServicio = new VentaServicio(
     modeloCategoria: Categoria,
     modeloStockPlato: StockPlato,
     modeloUsuario: Usuario,
-    impresora: new ImpresoraServicio()
+    impresora: new ImpresoraServicio(),
+    cajeroServicio: null
   }
 )
 const stockServicio = new StockServicio({
@@ -65,5 +66,7 @@ const cajeroServicio = new CajeroServicio({
   modeloCajaSesion: CajaSesion,
   modeloUsuario: Usuario
 })
+
+ventaServicio.cajeroServicio = cajeroServicio
 
 App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio })

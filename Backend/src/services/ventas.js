@@ -4,7 +4,7 @@ import { ProductoSinStockError, StockInsuficienteError, VentaErrorComun, VentaSe
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
 
 export class VentaServicio {
-  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora }) {
+  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora, cajeroServicio }) {
     this.modeloVenta = modeloVenta
     this.modeloDetalle = modeloDetalle
     this.modeloProducto = modeloProducto
@@ -12,6 +12,7 @@ export class VentaServicio {
     this.modeloStock = modeloStockPlato
     this.modeloUsuario = modeloUsuario
     this.impresora = impresora
+    this.cajeroServicio = cajeroServicio
   }
 
   async ventasDelDiaDetallados () {
@@ -150,7 +151,7 @@ export class VentaServicio {
   }
 
   async crearVenta ({ body, usuarioId, io }) {
-    const { clienteNombre, nroMesa, estado, detalle, tipo, observaciones, fechaReserva } = body
+    const { clienteNombre, nroMesa, estado, detalle, tipo, observaciones, fechaReserva, metodoPago } = body
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.create({
@@ -179,6 +180,10 @@ export class VentaServicio {
           cliente: clienteNombre,
           total
         })
+      }
+      if (tipo === 'LLEVAR') {
+        await this.imprimirVenta({ ventaId: venta.id, metodoPago })
+        await this.cajeroServicio.registrarPago({ body: { ventaId: venta.id, metodoPago }, usuarioId, io })
       }
       await this.imprimirTicketCocina({ ventaId: venta.id })
     } catch (error) {
@@ -346,7 +351,7 @@ export class VentaServicio {
   async imprimirVenta ({ ventaId, metodoPago }) {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        attributes: ['id', 'codigo', 'nroMesa', 'clienteNombre', 'total', 'createdAt'],
+        attributes: ['id', 'codigo', 'nroMesa', 'clienteNombre', 'total', 'tipo', 'createdAt'],
         include: [{
           model: this.modeloDetalle,
           attributes: ['cantidad', 'subtotal', 'precioUnitario'],
@@ -370,6 +375,7 @@ export class VentaServicio {
         cliente: venta.clienteNombre || 'Consumidor Final',
         mesero: venta.Usuario?.nombre || 'Desconocido',
         fecha,
+        tipo: venta.tipo,
         hora,
         total: Number(venta.total),
         metodoPago: metodoPago || 'No especificado',
