@@ -1,7 +1,7 @@
 import { Sequelize } from 'sequelize'
 
-const sequelize = new Sequelize('bbwqwg6kpm5ub3layqpb', 'ue1qwy91hzmhqmzq', 'txneChmMAdFnXeK8Cgg0', {
-  host: 'bbwqwg6kpm5ub3layqpb-mysql.services.clever-cloud.com',
+const sequelize = new Sequelize('azadordb', 'root', 'root', {
+  host: 'localhost',
   dialect: 'mysql',
   timezone: '-04:00'
 })
