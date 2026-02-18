@@ -1,7 +1,7 @@
 import axios from "axios";
 const instancia = axios.create({
-  baseURL:import.meta.env.VITE_BACKEND_URL || "http://localhost:3000",
-  withCredentials: true,
+  baseURL:import.meta.env.VITE_API_URL || "http://localhost:3000",
+  withCredentials: false,
 })
 
 instancia.interceptors.request.use((config)=>{
