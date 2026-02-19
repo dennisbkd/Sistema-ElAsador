@@ -1,7 +1,7 @@
-import { LayoutDashboard, Archive, Tag, FileCog, HandCoins, UserCog } from "lucide-react";
+import { Archive, Tag, FileCog, HandCoins, UserCog, BarChart3 } from "lucide-react";
 
 export  const menuItems = [
-    { title: "Dashboard", path: "/home", icon: LayoutDashboard, exact: true },
+    { title: "Dashboard", path: "/home", icon: BarChart3, exact: true },
     {
       title: "Gestionar Usuarios",path: "/home/usuarios", icon: UserCog, key: "usuarios"
     },
