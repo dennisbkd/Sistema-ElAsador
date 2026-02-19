@@ -4,6 +4,7 @@ import { CajaSesion, Categoria, DetalleVenta, MovimientoStock, Pago, Producto, S
 import { AuthServicio } from './services/auth.js'
 import { CajeroServicio } from './services/cajero.js'
 import { CategoriaServicio } from './services/categoria.js'
+import { DashboardServicio } from './services/dashboard.js'
 import { ImpresoraServicio } from './services/impresora.js'
 import { ProductoServicio } from './services/producto.js'
 import { StockServicio } from './services/stock.js'
@@ -69,4 +70,12 @@ const cajeroServicio = new CajeroServicio({
 
 ventaServicio.cajeroServicio = cajeroServicio
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio })
+const dashboardServicio = new DashboardServicio({
+  modeloVenta: Venta,
+  modeloDetalle: DetalleVenta,
+  modeloProducto: Producto,
+  modeloPago: Pago,
+  modeloCategoria: Categoria
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio, dashboardServicio })
