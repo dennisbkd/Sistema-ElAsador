@@ -111,10 +111,7 @@ export const ModalMobileCarrito = ({
                         <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
                           {item.producto.imagen ? (
                             <img
-                              src={item.producto.imagen.startsWith('http')
-                                ? getProductImageUrl(item.producto.imagen)
-                                : `${import.meta.env.VITE_API_URL}${getProductImageUrl(item.producto.imagen)}`
-                              }
+                              src={getProductImageUrl(item.producto.imagen)}
                               alt={item.producto.nombre}
                               className="w-full h-full object-cover"
                               loading="lazy"

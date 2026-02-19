@@ -1,6 +1,8 @@
 import axios from "axios";
+import { getBackendUrl } from "../utils/networkUtils";
+
 const instancia = axios.create({
-  baseURL:import.meta.env.VITE_API_URL || "http://localhost:3000",
+  baseURL: getBackendUrl(),
   withCredentials: false,
 })
 
@@ -23,6 +25,8 @@ instancia.interceptors.response.use(
   if(error.response?.status === 401 && window.location.pathname !=='/'){
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
+    // Disparar evento personalizado para desconectar el socket
+    window.dispatchEvent(new Event('auth-logout'))
     window.location.href = '/'
   }
     return Promise.reject(error)

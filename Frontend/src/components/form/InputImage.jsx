@@ -3,6 +3,7 @@ import { useFieldContext } from "."
 import { FieldErrors } from "./FieldErrors"
 import { useState, useRef } from "react"
 import { Upload, X, Image as ImageIcon } from "lucide-react"
+import { getProductImageUrl } from "../../utils/imageURL"
 
 export const InputImage = ({
   label,
@@ -53,7 +54,7 @@ export const InputImage = ({
 
   useEffect(() => {
     if (typeof field.state.value === 'string') {
-      setPreviewUrl(`${import.meta.env.VITE_API_URL}${field.state.value}`)
+      setPreviewUrl(getProductImageUrl(field.state.value))
     }
   }, [field.state.value])
 

@@ -12,6 +12,10 @@ export const useAuthLogin = () => {
       // guardar el token en el localStorage
       localStorage.setItem('token', data.token)
       localStorage.setItem('usuario', JSON.stringify(data.usuario))
+      
+      // Disparar evento personalizado para que el socket se reconecte
+      window.dispatchEvent(new Event('auth-login'))
+      
       // redigir al usuario segun su rol
 
       const rol = data.usuario.rol

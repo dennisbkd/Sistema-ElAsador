@@ -10,8 +10,7 @@ export const ProductoCardMobile = ({ producto, onAgregar, cantidad = 0, observac
   const disponible = stockDisponible > 0
 
   // Manejo de imagen
-  const imagen = getProductImageUrl(producto.imagen)
-  const pathImagen = imagen.startsWith('http') ? imagen : `${import.meta.env.VITE_API_URL}${imagen}`
+  const pathImagen = getProductImageUrl(producto.imagen)
 
   const getEstadoStock = () => {
     if (stockDisponible === 0) return { color: 'bg-red-500', texto: 'Agotado' }

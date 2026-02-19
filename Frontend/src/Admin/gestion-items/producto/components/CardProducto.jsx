@@ -7,8 +7,7 @@ import { getProductImageUrl } from '../../../../utils/imageURL';
 
 export const CardProducto = ({ productos, isEliminando, eliminarProducto, cambiarEstadoProducto }) => {
   const Icon = Icons[productos?.categoria?.icono || 'Package'];
-  const imagen = getProductImageUrl(productos.imagen);
-  const pathImagen = imagen.startsWith('http') ? imagen : `${import.meta.env.VITE_API_URL}${imagen}`;
+  const pathImagen = getProductImageUrl(productos.imagen);
   const esBajoStock = productos?.stock?.cantidad <= productos?.stock?.cantidadMinima;
   const esSinStock = productos?.stock?.cantidad === 0;
 

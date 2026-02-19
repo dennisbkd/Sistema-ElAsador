@@ -3,6 +3,7 @@ import path from 'node:path'
 import { createServer } from 'node:http'
 import { corsMiddleware } from './config/corsUrl.js'
 import { Conexiondatabase } from './database/conexion.js'
+import { obtenerIpLocal } from './utils/red.js'
 
 import { rutaUsuario } from './router/usuario.js'
 import { rutaVentas } from './router/ventas.js'
@@ -38,7 +39,19 @@ export const App = ({ usuarioServicio, ventaServicio, stockServicio, categoriaSe
   const io = SocketConfig(server)
 
   app.set('io', io)
-  server.listen(port, () => {
+
+  // Escuchar en 0.0.0.0 para permitir acceso desde la red local
+  const host = process.env.ELECTRON_MODE === 'true' ? '0.0.0.0' : 'localhost'
+
+  server.listen(port, host, () => {
+    const ipLocal = obtenerIpLocal()
+
     console.log('Servidor activo en el puerto:', port)
+
+    // Mostrar información adicional si está en modo Electron
+    if (process.env.ELECTRON_MODE === 'true') {
+      console.log(`\n📍 Acceso local: http://localhost:${port}`)
+      console.log(`📱 Acceso desde red: http://${ipLocal}:${port}\n`)
+    }
   })
 }

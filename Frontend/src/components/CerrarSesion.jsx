@@ -19,6 +19,10 @@ export const CerrarSesion = ({
     localStorage.removeItem('usuario')
 
     sessionStorage.clear()
+    
+    // Disparar evento personalizado para desconectar el socket
+    window.dispatchEvent(new Event('auth-logout'))
+    
     toast.success('Sesión cerrada exitosamente')
 
     // Cerrar dropdown si existe

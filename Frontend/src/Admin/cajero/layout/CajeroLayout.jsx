@@ -60,6 +60,8 @@ export const CajeroLayout = () => {
   const handleLogout = () => {
     localStorage.removeItem('usuario')
     localStorage.removeItem('token')
+    // Disparar evento personalizado para desconectar el socket
+    window.dispatchEvent(new Event('auth-logout'))
     window.location.href = '/'
   }
 

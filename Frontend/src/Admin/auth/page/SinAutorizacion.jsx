@@ -14,6 +14,8 @@ export const SinAutorizacion = () => {
     // Lógica para cerrar sesión
     localStorage.removeItem('token')
     localStorage.removeItem('usuario')
+    // Disparar evento personalizado para desconectar el socket
+    window.dispatchEvent(new Event('auth-logout'))
     navigate('/')
   }
 
