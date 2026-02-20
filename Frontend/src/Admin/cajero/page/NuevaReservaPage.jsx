@@ -20,12 +20,10 @@ export const NuevaReservaPage = () => {
   const [tipoVenta, setTipoVenta] = useState('RESERVA')
   const [showModalPago, setShowModalPago] = useState(false)
   const navigate = useNavigate()
-
-
   // Datos de la reserva
   const [reservaData, setReservaData] = useState({
     clienteNombre: '',
-    nroMesa: '',
+    nroMesa: '0',
     fechaReserva: '',
     horaReserva: '',
     observaciones: ''
@@ -89,7 +87,7 @@ export const NuevaReservaPage = () => {
 
       const reservaPayload = {
         clienteNombre: reservaData.clienteNombre.trim(),
-        nroMesa: reservaData.nroMesa ? parseInt(reservaData.nroMesa) : null,
+        nroMesa: reservaData.nroMesa ? parseInt(reservaData.nroMesa) : 0,
         observaciones: reservaData.observaciones || null,
         tipo: tipoVenta,
         estado: 'PENDIENTE',
@@ -102,7 +100,7 @@ export const NuevaReservaPage = () => {
       limpiarCarrito()
       setReservaData({
         clienteNombre: '',
-        nroMesa: '',
+        nroMesa: '0',
         observaciones: ''
       })
       setNombreBusqueda('')
@@ -111,6 +109,8 @@ export const NuevaReservaPage = () => {
       toast.error(error.message || 'Error al crear la reserva')
     }
   }
+  const totalVenta = Object.values(carrito).reduce((sum, item) => sum + (item.producto.precio * item.cantidad), 0)
+
 
   return (
     <motion.div
@@ -233,9 +233,7 @@ export const NuevaReservaPage = () => {
               onCrearReserva={mostrarModalPago}
               isPending={isPending}
               totalItems={totalItems}
-              total={Object.values(carrito).reduce((sum, item) =>
-                sum + (item.producto.precio * item.cantidad), 0
-              )}
+              total={totalVenta}
               actualizarObservacion={actualizarObservacion}
             />
           </div>
@@ -246,6 +244,7 @@ export const NuevaReservaPage = () => {
         isOpen={showModalPago}
         onClose={() => setShowModalPago(false)}
         onConfirmar={handleConfirmarMetodoPago}
+        total={totalVenta}
       />
     </motion.div>
   )
