@@ -297,7 +297,7 @@ export const ReservaSidebar = ({
             ) : (
               <>
                 <CheckCircle className="w-5 h-5" />
-                Confirmar Reserva
+                Confirmar Venta
               </>
             )}
           </button>

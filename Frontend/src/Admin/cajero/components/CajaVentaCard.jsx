@@ -37,7 +37,7 @@ export const CajaVentaCard = ({ venta, onVerDetalle, onImprimir, isPendingImprim
         <div className="flex justify-between items-start mb-3">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-bold text-lg text-gray-900">MESA {venta.nroMesa || 'N/A'}</h3>
+              <h3 className="font-bold text-lg text-gray-900">MESA {venta.nroMesa !== null ? venta.nroMesa : 'N/A'}</h3>
               <span className={`px-2 py-1 rounded-full text-xs font-medium ${estadoInfo.color}`}>
                 <EstadoIcon className="inline-block w-3 h-3 mr-1" />
                 {venta.estado}
