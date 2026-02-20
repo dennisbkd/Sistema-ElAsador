@@ -64,7 +64,7 @@ export const CajaPage = () => {
   // Estados disponibles
   const estados = [
     { valor: 'TODOS', label: 'Todos', icon: Filter, color: 'bg-gray-100 text-gray-800' },
-    { valor: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'bg-yellow-100 text-yellow-800' },
+    { valor: 'PENDIENTE', label: 'Pendientes', icon: Clock, color: 'bg-orange-100 text-orange-800' },
     { valor: 'LISTO', label: 'Listos', icon: CheckCircle, color: 'bg-green-100 text-green-800' },
     { valor: 'PAGADO', label: 'Pagados', icon: DollarSign, color: 'bg-blue-100 text-blue-800' },
     { valor: 'CANCELADO', label: 'Anulados', icon: XCircle, color: 'bg-red-100 text-red-800' }
