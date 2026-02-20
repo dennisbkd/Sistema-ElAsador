@@ -4,19 +4,28 @@
  * - Si se accede vía IP de red → usa esa misma IP:3000
  */
 export const getBackendUrl = () => {
-  // Detectar automáticamente basado en window.location
-  const hostname = window.location.hostname
-  
-  // Si estamos en localhost o 127.0.0.1, usar localhost
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    const url = 'http://localhost:3000'
-    return url
+  // Verificar que window y window.location estén disponibles
+  if (typeof window === 'undefined' || !window.location) {
+    return 'http://localhost:3000' // Fallback seguro
   }
-  
-  // Si estamos en una IP de red, usar esa misma IP
-  // Esto cubre: 192.168.x.x, 10.x.x.x, 172.16-31.x.x
-  const url = `http://${hostname}:3000`
-  return url
+
+  try {
+    // Detectar automáticamente basado en window.location
+    const hostname = window.location.hostname
+    
+    // Si estamos en localhost o 127.0.0.1, usar localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3000'
+    }
+    
+    // Si estamos en una IP de red, usar esa misma IP
+    // Esto cubre: 192.168.x.x, 10.x.x.x, 172.16-31.x.x
+    return `http://${hostname}:3000`
+  // eslint-disable-next-line no-unused-vars
+  } catch (error) {
+    // En caso de error, usar localhost como fallback
+    return 'http://localhost:3000'
+  }
 }
 
 /**

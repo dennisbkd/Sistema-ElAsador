@@ -1,13 +1,21 @@
 import axios from "axios";
 import { getBackendUrl } from "../utils/networkUtils";
+import { getValidToken } from "../utils/tokenUtils";
 
+// Crear instancia sin baseURL inicial
 const instancia = axios.create({
-  baseURL: getBackendUrl(),
   withCredentials: false,
 })
 
+// Interceptor para agregar baseURL dinámicamente en cada request
 instancia.interceptors.request.use((config)=>{
-  const token = localStorage.getItem('token')
+  // Agregar baseURL dinámicamente (lazy loading)
+  if (!config.url.startsWith('http')) {
+    config.baseURL = getBackendUrl()
+  }
+  
+  // Obtener y validar token
+  const token = getValidToken()
   if(token){
     config.headers.Authorization = `Bearer ${token}`
   }

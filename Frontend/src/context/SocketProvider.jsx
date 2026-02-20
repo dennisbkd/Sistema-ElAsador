@@ -1,16 +1,39 @@
+/* eslint-disable no-undef */
+
+
 import React, { useEffect, useState } from 'react'
 import { SocketContext } from './SocketContext'
 import { io } from 'socket.io-client'
 import { jwtDecode } from 'jwt-decode'
 import { getSocketUrl } from '../utils/networkUtils'
+import { getValidToken, clearAuthData } from '../utils/tokenUtils'
+
+// Función para decodificar token de forma segura
+const safeDecodeToken = (token) => {
+  if (!token) return null
+
+  try {
+    return jwtDecode(token)
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error decodificando token:', error.message)
+    }
+    // Si el token es inválido, eliminarlo
+    clearAuthData()
+    return null
+  }
+}
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState()
   const [isConnected, setIsConnected] = useState(false)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const decodeToken = token ? jwtDecode(token) : null
+    // Asegurar que window está disponible
+    if (typeof window === 'undefined') return
+
+    const token = getValidToken()
+    const decodeToken = safeDecodeToken(token)
 
     // Si ya existe un socket, desconectarlo antes de crear uno nuevo
     if (socket) {
@@ -24,83 +47,111 @@ export const SocketProvider = ({ children }) => {
       return
     }
 
-    const socketUrl = getSocketUrl()
+    try {
+      const socketUrl = getSocketUrl()
 
-    const nuevaConexionIo = io(
-      socketUrl,
-      {
-        auth: {
-          usuario: {
-            id: decodeToken?.id, usuario: decodeToken?.usuario
-          }
-        },
-        autoConnect: true
+      const nuevaConexionIo = io(
+        socketUrl,
+        {
+          auth: {
+            usuario: {
+              id: decodeToken?.id, usuario: decodeToken?.usuario
+            }
+          },
+          autoConnect: true
+        }
+      )
+
+      nuevaConexionIo.on("connect", () => {
+        setIsConnected(true)
+      })
+
+      nuevaConexionIo.on("disconnect", () => {
+        setIsConnected(false)
+      })
+
+      nuevaConexionIo.on("connect_error", (error) => {
+        // Error silencioso para evitar problemas en Chrome móvil
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Socket error:', error.message)
+        }
+      })
+
+      setSocket(nuevaConexionIo)
+
+      return () => {
+        if (nuevaConexionIo) {
+          nuevaConexionIo.disconnect()
+        }
       }
-    )
-
-    nuevaConexionIo.on("connect", () => {
-      setIsConnected(true)
-    })
-
-    nuevaConexionIo.on("disconnect", () => {
+    } catch (error) {
+      // Error al obtener URL o crear socket
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error inicializando socket:', error)
+      }
+      setSocket(null)
       setIsConnected(false)
-    })
-
-    nuevaConexionIo.on("connect_error", (error) => {
-      console.error('❌ Error de conexión socket:', error.message)
-    })
-
-    setSocket(nuevaConexionIo)
-
-    return () => {
-      if (nuevaConexionIo) {
-        nuevaConexionIo.disconnect()
-      }
     }
   }, []) // Solo se ejecuta al montar el componente
 
   // Efecto separado para escuchar cambios en localStorage (login/logout)
   useEffect(() => {
     const handleLogin = () => {
-      const token = localStorage.getItem('token')
+      if (typeof window === 'undefined') return
+
+      const token = getValidToken()
 
       if (token) {
-        // Desconectar socket anterior si existe
-        if (socket) {
-          console.log('🔌 Desconectando socket anterior')
-          socket.disconnect()
-        }
-
-        // Usuario hizo login, crear nuevo socket
-        console.log('🔌 Creando nueva conexión socket después de login')
-        const decodeToken = jwtDecode(token)
-        const socketUrl = getSocketUrl()
-
-        const nuevaConexionIo = io(
-          socketUrl,
-          {
-            auth: {
-              usuario: {
-                id: decodeToken?.id, usuario: decodeToken?.usuario
-              }
-            },
-            autoConnect: true
+        try {
+          // Desconectar socket anterior si existe
+          if (socket) {
+            socket.disconnect()
           }
-        )
 
-        nuevaConexionIo.on("connect", () => {
-          setIsConnected(true)
-        })
+          // Usuario hizo login, crear nuevo socket
+          const decodeToken = safeDecodeToken(token)
 
-        nuevaConexionIo.on("disconnect", () => {
-          setIsConnected(false)
-        })
+          // Si el token es inválido, no crear conexión
+          if (!decodeToken) {
+            setSocket(null)
+            setIsConnected(false)
+            return
+          }
 
-        nuevaConexionIo.on("connect_error", (error) => {
-          console.error('❌ Error de conexión socket:', error.message)
-        })
+          const socketUrl = getSocketUrl()
 
-        setSocket(nuevaConexionIo)
+          const nuevaConexionIo = io(
+            socketUrl,
+            {
+              auth: {
+                usuario: {
+                  id: decodeToken?.id, usuario: decodeToken?.usuario
+                }
+              },
+              autoConnect: true
+            }
+          )
+
+          nuevaConexionIo.on("connect", () => {
+            setIsConnected(true)
+          })
+
+          nuevaConexionIo.on("disconnect", () => {
+            setIsConnected(false)
+          })
+
+          nuevaConexionIo.on("connect_error", (error) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Socket error:', error.message)
+            }
+          })
+
+          setSocket(nuevaConexionIo)
+        } catch (error) {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error en handleLogin:', error)
+          }
+        }
       }
     }
 
