@@ -14,6 +14,7 @@ import { VentaServicio } from './services/ventas.js'
 import { VentasAdminServicio } from './services/ventasAdmin.js'
 
 const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelVenta: Venta })
+const impresoraServicio = new ImpresoraServicio()
 const ventaServicio = new VentaServicio(
   {
     modeloVenta: Venta,
@@ -22,7 +23,7 @@ const ventaServicio = new VentaServicio(
     modeloCategoria: Categoria,
     modeloStockPlato: StockPlato,
     modeloUsuario: Usuario,
-    impresora: new ImpresoraServicio(),
+    impresora: impresoraServicio,
     cajeroServicio: null
   }
 )
@@ -57,7 +58,8 @@ const ventasAdminServicio = new VentasAdminServicio({
   modeloDetalleVenta: DetalleVenta,
   modeloProducto: Producto,
   modeloStockPlato: StockPlato,
-  modeloUsuario: Usuario
+  modeloUsuario: Usuario,
+  impresora: impresoraServicio
 })
 
 const cajeroServicio = new CajeroServicio({
