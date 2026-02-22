@@ -68,6 +68,34 @@ export class ImpresoraServicio {
     }
   }
 
+  async imprimirReservaAsignada (venta) {
+    try {
+      // Si ya se está imprimiendo, agregar a la cola
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirReservaAsignada(venta)
+          })
+        })
+      }
+
+      // Bloquear impresora
+      this.isPrinting = true
+
+      await this.generarPDFReservaAsignada(venta)
+      await this.imprimirPDF()
+      // Desbloquear y procesar siguiente en cola
+      this.isPrinting = false
+      this.processNextInQueue()
+    } catch (error) {
+      console.error('❌ Error al imprimir reserva asignada:', error)
+      this.isPrinting = false
+      this.processNextInQueue()
+    }
+  }
+
   processNextInQueue () {
     if (this.printQueue.length > 0) {
       const next = this.printQueue.shift()
@@ -262,6 +290,89 @@ export class ImpresoraServicio {
       })
       doc.moveDown()
       doc.text('------------', { align: 'center' })
+
+      doc.end()
+
+      stream.on('finish', resolve)
+    })
+  }
+
+  generarPDFReservaAsignada (venta) {
+    return new Promise((resolve) => {
+      const doc = new PDFDocument({
+        size: [226, 1000],
+        margins: { top: 5, bottom: 5, left: 5, right: 5 }
+      })
+      const stream = fs.createWriteStream(this.ticketPath)
+      doc.pipe(stream)
+
+      // ===== ENCABEZADO =====
+      doc.fontSize(14).text('RESERVA ASIGNADA', { align: 'center' })
+      doc.moveDown()
+
+      // ===== DETALLES =====
+      doc.fontSize(11)
+      doc.text(`Venta: ${venta.codigo}`)
+      doc.text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+      doc.text(`Mesero: ${venta.mesero}`)
+      doc.text(`Mesa: ${venta.mesa}`)
+      doc.text(`Hora: ${venta.hora}`)
+      if (venta.observaciones) {
+        doc.text(`Observación: ${venta.observaciones}`)
+      }
+
+      doc.moveDown()
+      doc.text('--------------------------------')
+      doc.moveDown()
+
+      // ===== encabezado cantidad x producto =====
+      const y = doc.y
+      doc.fontSize(11).text('PRODUCTOS', 5, y, {
+        width: 140,
+        align: 'left'
+      })
+
+      doc.fontSize(11).text('CANTIDAD', 150, y, {
+        width: 70,
+        align: 'right'
+      })
+
+      doc.moveDown()
+
+      // ===== PRODUCTOS =====
+      venta.items.forEach(p => {
+        const y = doc.y
+
+        // ===== NOMBRE PRODUCTO (columna izquierda)
+        doc
+          .fontSize(10)
+          .text(p.nombre, 5, y, {
+            width: 140,
+            align: 'left'
+          })
+
+        // ===== CANTIDAD DE PRODUCTOS (columna derecha fija)
+        doc
+          .fontSize(12)
+          .text(` ${p.cantidad}`, 150, y, {
+            width: 60,
+            align: 'right'
+          })
+
+        // ===== LINEA PARA OBSERVACIONES
+        if (p.observaciones) {
+          doc.fontSize(9)
+            .text(`Obs: ${p.observaciones}`, 10, doc.y, { align: 'left' })
+        }
+
+        doc.moveDown()
+      })
+
+      doc.moveDown()
+      doc.text('--------------------------------', { align: 'center' })
+      doc.moveDown()
+      doc.fontSize(10)
+        .text('Reserva registrada', { align: 'center' })
 
       doc.end()
 

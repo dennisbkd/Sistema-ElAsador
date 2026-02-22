@@ -9,7 +9,8 @@ export class VentasAdminServicio {
     modeloDetalleVenta,
     modeloProducto,
     modeloStockPlato,
-    modeloUsuario
+    modeloUsuario,
+    impresora
   }) {
     this.ventaServicio = ventaServicio
     this.modeloVenta = modeloVenta
@@ -17,6 +18,7 @@ export class VentasAdminServicio {
     this.modeloProducto = modeloProducto
     this.modeloStockPlato = modeloStockPlato
     this.modeloUsuario = modeloUsuario
+    this.impresora = impresora
   }
 
   async obtenerVentasAdmin ({ filtros, page }) {
@@ -147,8 +149,24 @@ export class VentasAdminServicio {
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        where: { tipo: 'RESERVA' }
-      }, { transaction })
+        where: { tipo: 'RESERVA' },
+        include: [
+          {
+            model: this.modeloDetalleVenta,
+            include: [
+              {
+                model: this.modeloProducto,
+                attributes: ['nombre']
+              }
+            ]
+          },
+          {
+            model: this.modeloUsuario,
+            attributes: ['nombre']
+          }
+        ],
+        transaction
+      })
       if (!venta) {
         throw new VentaSearchError('Venta no encontrada')
       }
@@ -161,14 +179,51 @@ export class VentasAdminServicio {
       if (venta.usuarioId === body.usuarioId) {
         throw new VentaErrorComun('La reserva ya se encuentra asignada a este mesero')
       }
+
+      // Obtener el usuario asignado
+      const usuarioAsignado = await this.modeloUsuario.findByPk(body.usuarioId)
+
       venta.usuarioId = body.usuarioId
       venta.nroMesa = body.nroMesa
+      venta.tipo = 'NORMAL' // Cambiar el tipo a NORMAL al asignar a un mesero
       await venta.save({ transaction })
       await transaction.commit()
+
       // notificar al mesero asignado
       if (io) {
         io.to(`usuario_${body.usuarioId}`).emit('estado_venta_cambiado', { codigo: venta.codigo, cliente: venta.clienteNombre })
       }
+
+      // Imprimir ticket de reserva asignada
+      try {
+        const fecha = venta.createdAt.toLocaleDateString('es-BO')
+        const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+
+        const DtoReservaAsignada = {
+          codigo: venta.codigo,
+          mesa: venta.nroMesa,
+          cliente: venta.clienteNombre || 'Sin nombre',
+          mesero: usuarioAsignado?.nombre || 'Desconocido',
+          tipo: venta.tipo,
+          fecha,
+          hora,
+          observaciones: venta.observaciones || null,
+          items: venta.DetallePedidos.map(item => ({
+            nombre: item.Producto?.nombre || 'Producto Desconocido',
+            cantidad: Number(item.cantidad),
+            observaciones: item.observaciones || null
+          }))
+        }
+
+        await this.impresora.imprimirReservaAsignada(DtoReservaAsignada)
+      } catch (error) {
+        console.error('Error al imprimir reserva asignada:', error.message)
+        // No lanzar error, solo registrar en log
+      }
+
       return { mensaje: 'Reserva asignada al mesero correctamente' }
     } catch (error) {
       await transaction.rollback()
