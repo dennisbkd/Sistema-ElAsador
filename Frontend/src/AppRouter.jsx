@@ -23,6 +23,7 @@ import { CajaPage } from "./Admin/cajero/page/CajaPage";
 import { CajeroLayout } from "./Admin/cajero/layout/CajeroLayout";
 import { VentaDetallePage } from "./Admin/cajero/page/VentaDetallePage";
 import { NuevaReservaPage } from "./Admin/cajero/page/NuevaReservaPage";
+import DashboardPage from "./Admin/dashboard/page/DashboardPage";
 
 export const AppRouter = () => {
   return (
@@ -35,6 +36,7 @@ export const AppRouter = () => {
         <Route path="usuarios" element={<UsuarioLayout />} >
           <Route index element={<UsuarioPage />} />
         </Route>
+        <Route index element={<DashboardPage />} />
         <Route path="productos" element={<ProductoLayout />} >
           <Route index element={<ProductoPage />} />
           <Route path="nuevo" element={<NuevoProductoPage />} />
