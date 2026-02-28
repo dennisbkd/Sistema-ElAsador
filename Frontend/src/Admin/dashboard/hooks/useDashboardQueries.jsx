@@ -73,3 +73,13 @@ export const useDashboardVentasPorEstado = () => {
     retry: 2
   })
 }
+
+export const useDashboardReporteVentas = ({ fechaInicio, fechaFin, enabled = false } = {}) => {
+  return useQuery({
+    queryKey: ['dashboard', 'reporte-ventas', fechaInicio, fechaFin],
+    queryFn: () => dashboardApi.obtenerReporteVentas({ fechaInicio, fechaFin }),
+    staleTime: 300000, // 5 minutos
+    enabled,
+    retry: 1
+  })
+}
