@@ -46,5 +46,35 @@ export const dashboardApi = {
   invalidarCache: async () => {
       const { data } = await instancia.post(`${API_DASHBOARD}/invalidate-cache`)
       return data
+  },
+  // GET /dashboard/sales-report
+  obtenerReporteVentas: async ({ fechaInicio, fechaFin } = {}) => {
+    const params = {}
+    if (fechaInicio) params.fechaInicio = fechaInicio
+    if (fechaFin) params.fechaFin = fechaFin
+    const { data } = await instancia.get(`${API_DASHBOARD}/sales-report`, { params })
+    return data
+  },
+  // GET /dashboard/sales-report/export/pdf
+  descargarReportePDF: async ({ fechaInicio, fechaFin } = {}) => {
+    const params = {}
+    if (fechaInicio) params.fechaInicio = fechaInicio
+    if (fechaFin) params.fechaFin = fechaFin
+    const response = await instancia.get(`${API_DASHBOARD}/sales-report/export/pdf`, {
+      params,
+      responseType: 'blob'
+    })
+    return response.data
+  },
+  // GET /dashboard/sales-report/export/excel
+  descargarReporteExcel: async ({ fechaInicio, fechaFin } = {}) => {
+    const params = {}
+    if (fechaInicio) params.fechaInicio = fechaInicio
+    if (fechaFin) params.fechaFin = fechaFin
+    const response = await instancia.get(`${API_DASHBOARD}/sales-report/export/excel`, {
+      params,
+      responseType: 'blob'
+    })
+    return response.data
   }
 }
