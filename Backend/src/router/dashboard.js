@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { DashboardControlador } from '../controller/dashboard.js'
 import { verificarRol } from '../../middleware/verificarRol.js'
+import { DashboardControlador } from '../controller/dashboard.js'
 
 export const rutaDashboard = ({ dashboardServicio }) => {
   const rutas = Router()
@@ -14,6 +14,9 @@ export const rutaDashboard = ({ dashboardServicio }) => {
   rutas.get('/recent-activity', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.obtenerActividadReciente)
   rutas.get('/sales-by-type', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.obtenerVentasPorTipo)
   rutas.get('/sales-by-state', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.obtenerVentasPorEstado)
+  rutas.get('/sales-report', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.obtenerReporteVentas)
+  rutas.get('/sales-report/export/pdf', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.exportarReporteVentasPDF)
+  rutas.get('/sales-report/export/excel', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.exportarReporteVentasExcel)
   rutas.post('/invalidate-cache', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorDashboard.invalidarCache)
 
   return rutas

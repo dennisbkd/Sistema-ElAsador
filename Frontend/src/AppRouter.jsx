@@ -23,7 +23,7 @@ import { CajaPage } from "./Admin/cajero/page/CajaPage";
 import { CajeroLayout } from "./Admin/cajero/layout/CajeroLayout";
 import { VentaDetallePage } from "./Admin/cajero/page/VentaDetallePage";
 import { NuevaReservaPage } from "./Admin/cajero/page/NuevaReservaPage";
-import { DashboardPage } from "./Admin/dashboard/page/DashboardPage";
+import DashboardPage from "./Admin/dashboard/page/DashboardPage";
 
 export const AppRouter = () => {
   return (

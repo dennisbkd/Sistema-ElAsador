@@ -15,6 +15,7 @@ import { TopProductsTable } from '../components/TopProductsTable'
 import { LiveOrdersSection } from '../components/LiveOrdersCard'
 import { SalesByTypeCard } from '../components/SalesByTypeCard'
 import { SalesByStateCard } from '../components/SalesByStateCard'
+import { SalesReportCard } from '../components/SalesReportCard'
 import {
   DashboardHeader,
   RefreshButton,
@@ -128,6 +129,11 @@ export function DashboardPage() {
           data={resumenQuery.data}
           isLoading={resumenQuery.isLoading}
         />
+      </motion.div>
+
+      {/* Reporte de Ventas */}
+      <motion.div variants={ITEM_VARIANTS}>
+        <SalesReportCard />
       </motion.div>
 
       {/* Gráfico de ventas por hora - Ancho completo */}

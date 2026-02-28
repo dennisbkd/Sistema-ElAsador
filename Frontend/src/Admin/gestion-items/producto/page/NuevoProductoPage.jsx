@@ -109,7 +109,7 @@ export const NuevoProductoPage = () => {
                             <label className="inline-flex items-center cursor-pointer">
                               <field.CheckBox />
                               <span className="ml-3 text-sm font-medium text-gray-900">
-                                {field.value ? 'Sí' : 'No'}
+                                {field.state.value ? 'Sí' : 'No'}
                               </span>
                             </label>
                           </div>
