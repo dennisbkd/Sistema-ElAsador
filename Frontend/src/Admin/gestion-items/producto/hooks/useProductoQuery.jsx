@@ -72,6 +72,7 @@ export const useEditarProducto = () => {
       toast.success('Producto editado con exito')
       clientQuery.invalidateQueries({ queryKey: ['productos'] })
       clientQuery.invalidateQueries({ queryKey: ['producto-id'] })
+      clientQuery.invalidateQueries({ queryKey: ['busqueda-producto-nombre'] })
     },
     onError: (error) => {
       toast.error(error.response?.data?.error || 'Error al editar el producto')
@@ -111,6 +112,8 @@ export const useCambiarEstadoProducto = () => {
     onSuccess: (data, variables) => {
       toast.success(variables.activo ? 'Producto activado con éxito' : 'Producto desactivado con éxito')
       queryClient.invalidateQueries({ queryKey: ['productos'], exact: false })
+      queryClient.invalidateQueries({ queryKey: ['producto-id', variables.id], exact: true })
+      queryClient.invalidateQueries({ queryKey: ['busqueda-producto-nombre'] })
     },
     onError: (error) => {
       toast.error(error.response?.data?.error || 'Error al cambiar el estado del producto')
