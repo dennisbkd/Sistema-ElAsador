@@ -1,34 +1,19 @@
 import React from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { agregarProductoAPedidoMesero, anularProductosDeVenta, anularVenta, cambiarEstadoVenta, imprimirComandaCocina, imprimirVenta, obtenerVentaPorId, obtenerVentasAdmin } from '../api/ajustesAdminApi'
-import { useState } from 'react'
+import { agregarProductoAPedidoMesero, anularProductosDeVenta, anularVenta, cambiarEstadoVenta, imprimirComandaCocina, imprimirVenta, obtenerTotalesDiarios, obtenerVentaPorId, obtenerVentasAdmin, obtenerVentasPorMesas } from '../api/ajustesAdminApi'
 import toast from 'react-hot-toast'
 
-export const useAjustesQuery = ({ filtros }) => {
-  const [page, setPage] = useState(1)
+export const useAjustesQuery = ({ filtros, pageUrl }) => {
+  const page = pageUrl || 1
+
   const pedidosQuery = useQuery({
     queryKey: ['ajustes-admin', filtros?.filtroEstado, filtros?.tipoVenta, page],
-    queryFn: () => obtenerVentasAdmin({ filtros, page })
+    queryFn: () => obtenerVentasAdmin({ filtros, page }),
+    staleTime: 5 * 60 * 1000 // 5 minutos
   })
-
-  const siguientePagina = () => {
-    if (pedidosQuery.data?.length === 0) {
-      return
-    }
-    setPage((prev) => prev + 1)
-  }
-
-  const anteriorPagina = () => {
-    if (page === 1) {
-      return
-    }
-    setPage((prev) => prev - 1)
-  }
 
   return {
     pedidosQuery,
-    siguientePagina,
-    anteriorPagina,
     page
   }
 }
@@ -55,6 +40,7 @@ export const useAnularProductoDeVenta = () => {
       toast.success('Producto anulado con éxito')
       queryClient.invalidateQueries({ queryKey: ['ajuste-venta-id'] })
       queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
     },
     onError: (error) => {
       toast.error(`Error al anular el producto: ${error.response?.data?.errorDetalle || error.message}`)
@@ -70,6 +56,7 @@ export const useAnularVenta = () => {
       toast.success('Venta anulada con éxito')
       queryClient.invalidateQueries({ queryKey: ['ajuste-venta-id'] })
       queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['productos'] })
     },
     onError: (error) => {
       toast.error(`Error al anular la venta: ${error.response?.data?.mensaje || error.message}`)
@@ -135,4 +122,31 @@ export const useImprimirVenta = () => {
     }
   })
 
+}
+
+
+export const useVentasPorMesas = ({ filtroMesaNombre }) => {
+  const ventasPorMesasQuery = useQuery({
+    queryKey: ['ventas-por-mesas', filtroMesaNombre],
+    queryFn: () => obtenerVentasPorMesas({ filtroMesaNombre }),
+    enabled: !!filtroMesaNombre
+  })
+  return {
+    ventasPorMesas: ventasPorMesasQuery.data || [],
+    isLoadingVentasPorMesas: ventasPorMesasQuery.isLoading,
+    isErrorVentasPorMesas: ventasPorMesasQuery.isError
+  }
+}
+
+export const useVentasTotalesDiarios = () => {
+  const ventasTotalesDiariosQuery = useQuery({
+    queryKey: ['totales-diarios'],
+    queryFn: () => obtenerTotalesDiarios(),
+    staleTime: 5 * 60 * 1000
+  })
+  return {
+    totalesDiarios: ventasTotalesDiariosQuery.data || {},
+    isLoadingTotalesDiarios: ventasTotalesDiariosQuery.isLoading,
+    isErrorTotalesDiarios: ventasTotalesDiariosQuery.isError
+  }
 }

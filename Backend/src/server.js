@@ -74,10 +74,12 @@ ventaServicio.cajeroServicio = cajeroServicio
 
 const dashboardServicio = new DashboardServicio({
   modeloVenta: Venta,
-  modeloDetalle: DetalleVenta,
+  modeloDetalleVenta: DetalleVenta,
   modeloProducto: Producto,
-  modeloPago: Pago,
-  modeloCategoria: Categoria
+  modeloCategoria: Categoria,
+  modeloUsuario: Usuario,
+  modeloDetalle: DetalleVenta,
+  modeloPago: Pago
 })
 
 App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio, dashboardServicio })

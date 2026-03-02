@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { abrirCaja, cerrarCaja, obtenerCajaAbierta, registrarPago } from '../api/cajaApi'
 import toast from 'react-hot-toast'
+import { asignarReservaAMesero } from '../../ajustes/api/ajustesAdminApi'
 
 export const useCajaQueryAbrir = () => {
   // const queryClient = useQueryClient()
@@ -48,10 +49,28 @@ export const useRegistrarPago = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['caja-abierta'] })
       queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
+      queryClient.invalidateQueries({ queryKey: ['ajuste-venta-id'] })
+      queryClient.invalidateQueries({ queryKey: ['totales-diarios'] })
       toast.success('Pago registrado con éxito')
     },
     onError: (error) => {
       toast.error(error.response?.data?.mensaje || 'Error al registrar el pago')
+    }
+  })
+}
+
+export const useAsignarMeseroAPedido = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationKey: ['asignar-pedido'],
+    mutationFn: ({ ventaId, body }) => asignarReservaAMesero({ ventaId, body }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['ajuste-venta-id'] })
+      queryClient.invalidateQueries({ queryKey: ['ajustes-admin'] })
+      toast.success('Mesero asignado con éxito')
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.mensaje || 'Error al asignar mesero')
     }
   })
 }

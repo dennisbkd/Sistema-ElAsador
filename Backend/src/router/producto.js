@@ -12,7 +12,7 @@ export const rutaProducto = ({ productoServicio }) => {
   ruta.post('/crear-producto', verificarRol(['ADMINISTRADOR']), uploadProducto.single('imagen'), controladorProducto.crearProducto)
   ruta.put('/actualizar/:id', verificarRol(['ADMINISTRADOR']), uploadProducto.single('imagen'), controladorProducto.editarProducto)
   ruta.delete('/eliminar/:id', verificarRol(['ADMINISTRADOR']), controladorProducto.eliminarProducto)
-  ruta.get('/busqueda-producto-nombre', verificarRol(['ADMINISTRADOR']), controladorProducto.busquedaProductoNombre)
+  ruta.get('/busqueda-producto-nombre', verificarRol(['ADMINISTRADOR', 'MESERO', 'CAJERO']), controladorProducto.busquedaProductoNombre)
   ruta.put('/cambiar-estado/:id', verificarRol(['ADMINISTRADOR']), controladorProducto.cambiarEstadoProducto)
 
   return ruta

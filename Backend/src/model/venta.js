@@ -30,7 +30,7 @@ export const Venta = sequelize.define('Venta',
       }
     },
     tipo: {
-      type: DataTypes.ENUM('NORMAL', 'RESERVA'),
+      type: DataTypes.ENUM('NORMAL', 'RESERVA', 'LLEVAR'),
       defaultValue: 'NORMAL'
     },
     total: {

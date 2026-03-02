@@ -17,8 +17,8 @@ export const agregarProductoAPedidoMesero = async ({ventaId, detalle})=>{
   return res.data
 }
 
-export const asignarReservaAMesero = async (ventaId, usuarioId)=>{
-  const res = await instancia.post(`/admin/venta-admin/${ventaId}/asignar-reserva-mesero?usuarioId=${usuarioId}`)
+export const asignarReservaAMesero = async ({ventaId, body})=>{
+  const res = await instancia.post(`/admin/venta-admin/${ventaId}/asignar-reserva-mesero`, body)
   return res.data
 }
 
@@ -44,5 +44,15 @@ export const imprimirComandaCocina = async (ventaId) => {
 
 export const imprimirVenta = async (ventaId) => {
   const res = await instancia.post(`/admin/venta-admin/${ventaId}/imprimir-venta`)
+  return res.data
+}
+
+export const obtenerVentasPorMesas = async ({ filtroMesaNombre }) => {
+  const res = await instancia.get(`/admin/venta-admin/ventas-por-mesas?filtroMesaNombre=${filtroMesaNombre}`)
+  return res.data
+}
+
+export const obtenerTotalesDiarios = async()=>{
+  const res = await instancia.get('/admin/venta-admin/totales-del-dia')
   return res.data
 }

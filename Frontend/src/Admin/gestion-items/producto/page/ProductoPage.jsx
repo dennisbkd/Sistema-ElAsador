@@ -35,7 +35,7 @@ export const ProductoPage = () => {
     modal,
     productosEncontrados,
     isErrorBusqueda,
-    isLoadingBusqueda } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce })
+    isLoadingBusqueda } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce, limit: 100 })
 
   const cerrarModal = () => {
     eliminarProducto(modal.data?.id)

@@ -1,7 +1,28 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 export const useCarrito = () => {
   const [carrito, setCarrito] = useState({})
+
+  useEffect(() => {
+    const guardarCarrito = localStorage.getItem('carrito')
+    if (guardarCarrito) {
+      try {
+        setCarrito(JSON.parse(guardarCarrito))
+      } catch (error) {
+        console.error('Error al parsear el carrito guardado:', error)
+        localStorage.removeItem('carrito')
+        setCarrito({})
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (Object.keys(carrito).length > 0) {
+      localStorage.setItem('carrito', JSON.stringify(carrito))
+    } else {
+      localStorage.removeItem('carrito')
+    }
+  }, [carrito])
 
   const agregarProducto = useCallback((producto, cantidad) => {
     setCarrito(carritoAnterior => {

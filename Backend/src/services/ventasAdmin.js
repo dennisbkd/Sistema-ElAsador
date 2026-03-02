@@ -9,7 +9,8 @@ export class VentasAdminServicio {
     modeloDetalleVenta,
     modeloProducto,
     modeloStockPlato,
-    modeloUsuario
+    modeloUsuario,
+    impresora
   }) {
     this.ventaServicio = ventaServicio
     this.modeloVenta = modeloVenta
@@ -17,11 +18,12 @@ export class VentasAdminServicio {
     this.modeloProducto = modeloProducto
     this.modeloStockPlato = modeloStockPlato
     this.modeloUsuario = modeloUsuario
+    this.impresora = impresora
   }
 
   async obtenerVentasAdmin ({ filtros, page }) {
     const where = filtros?.filtroEstado && filtros?.filtroEstado !== 'undefined' ? { estado: filtros.filtroEstado } : {}
-    where.tipo = filtros?.tipoVenta && filtros?.tipoVenta !== 'undefined' ? filtros.tipoVenta : { [Op.in]: ['NORMAL', 'RESERVA'] }
+    where.tipo = filtros?.tipoVenta && filtros?.tipoVenta !== 'undefined' ? filtros.tipoVenta : { [Op.in]: ['NORMAL', 'RESERVA', 'LLEVAR'] }
     try {
       // 1. Primero obtener las ventas del día
       const ventasHoy = await this.modeloVenta.findAll({
@@ -83,6 +85,57 @@ export class VentasAdminServicio {
     }
   }
 
+  async obtenerVentasPorMesas ({ filtro }) {
+    try {
+      const filtroNumero = parseInt(filtro)
+      const esNumero = !isNaN(filtroNumero)
+      // Si el filtro es un número, buscar por nroMesa, si no, buscar por clienteNombre
+      const ventasMesas = await this.modeloVenta.findAll({
+        where: {
+          [Op.or]: [
+            esNumero ? { nroMesa: filtroNumero } : null,
+            {
+              clienteNombre: {
+                [Op.like]: `%${filtro}%`
+              }
+            }
+          ].filter(condicion => condicion !== null),
+          createdAt: {
+            [Op.between]: [
+              horaInicial,
+              horaFinal
+            ]
+          }
+        }
+      })
+      if (ventasMesas.length === 0) return []
+      const ventasFormateadas = ventasMesas.map(venta => {
+        const fecha = venta.createdAt.toLocaleDateString('es-BO')
+        const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+        return {
+          id: venta.id,
+          codigo: venta.codigo,
+          nroMesa: venta.nroMesa,
+          mesero: venta.Usuario?.nombre,
+          clienteNombre: venta.clienteNombre ?? '',
+          total: Number(venta.total),
+          tipo: venta.tipo,
+          estado: venta.estado,
+          // total_items: venta.DetallePedidos.length ?? 0,
+          observaciones: venta.observaciones ?? '',
+          fecha,
+          hora
+        }
+      })
+      return ventasFormateadas
+    } catch (error) {
+      throw new VentaErrorComun('Error al obtener las ventas por mesas')
+    }
+  }
+
   async obtenerVentaPorId ({ ventaId }) {
     return await this.ventaServicio.obtenerVentaId({ ventaId })
   }
@@ -91,13 +144,29 @@ export class VentasAdminServicio {
     return await this.ventaServicio.agregarProductoAVenta({ ventaId, body, io })
   }
 
-  async asignarReservaAMesero ({ ventaId, usuarioId, io }) {
+  async asignarReservaAMesero ({ ventaId, body, io }) {
     // Lógica para asignar una reserva a un mesero
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        where: { tipo: 'RESERVA' }
-      }, { transaction })
+        where: { tipo: 'RESERVA' },
+        include: [
+          {
+            model: this.modeloDetalleVenta,
+            include: [
+              {
+                model: this.modeloProducto,
+                attributes: ['nombre']
+              }
+            ]
+          },
+          {
+            model: this.modeloUsuario,
+            attributes: ['nombre']
+          }
+        ],
+        transaction
+      })
       if (!venta) {
         throw new VentaSearchError('Venta no encontrada')
       }
@@ -107,16 +176,54 @@ export class VentasAdminServicio {
       if (['PAGADO', 'LISTO'].includes(venta.estado)) {
         throw new VentaErrorComun('No se puede asignar una reserva que ya fue pagada o esta lista')
       }
-      if (venta.usuarioId === usuarioId) {
+      if (venta.usuarioId === body.usuarioId) {
         throw new VentaErrorComun('La reserva ya se encuentra asignada a este mesero')
       }
-      venta.usuarioId = usuarioId
+
+      // Obtener el usuario asignado
+      const usuarioAsignado = await this.modeloUsuario.findByPk(body.usuarioId)
+
+      venta.usuarioId = body.usuarioId
+      venta.nroMesa = body.nroMesa
+      venta.tipo = 'NORMAL' // Cambiar el tipo a NORMAL al asignar a un mesero
       await venta.save({ transaction })
       await transaction.commit()
+
       // notificar al mesero asignado
       if (io) {
-        io.to(`usuario_${usuarioId}`).emit('nueva_reserva_asignada', { codigo: venta.codigo, cliente: venta.clienteNombre })
+        io.to(`usuario_${body.usuarioId}`).emit('estado_venta_cambiado', { codigo: venta.codigo, cliente: venta.clienteNombre })
       }
+
+      // Imprimir ticket de reserva asignada
+      try {
+        const fecha = venta.createdAt.toLocaleDateString('es-BO')
+        const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+
+        const DtoReservaAsignada = {
+          codigo: venta.codigo,
+          mesa: venta.nroMesa,
+          cliente: venta.clienteNombre || 'Sin nombre',
+          mesero: usuarioAsignado?.nombre || 'Desconocido',
+          tipo: venta.tipo,
+          fecha,
+          hora,
+          observaciones: venta.observaciones || null,
+          items: venta.DetallePedidos.map(item => ({
+            nombre: item.Producto?.nombre || 'Producto Desconocido',
+            cantidad: Number(item.cantidad),
+            observaciones: item.observaciones || null
+          }))
+        }
+
+        await this.impresora.imprimirReservaAsignada(DtoReservaAsignada)
+      } catch (error) {
+        console.error('Error al imprimir reserva asignada:', error.message)
+        // No lanzar error, solo registrar en log
+      }
+
       return { mensaje: 'Reserva asignada al mesero correctamente' }
     } catch (error) {
       await transaction.rollback()
@@ -293,5 +400,59 @@ export class VentasAdminServicio {
 
   async imprimirFacturaVenta ({ ventaId }) {
     return await this.ventaServicio.imprimirVenta({ ventaId })
+  }
+
+  async obtenerTotalesDiarios () {
+    try {
+      const totales = await this.modeloVenta.findAndCountAll({
+        where: {
+          createdAt: {
+            [Op.between]: [
+              horaInicial,
+              horaFinal
+            ]
+          }
+        },
+        attributes: [
+          [sequelize.fn('SUM', sequelize.col('total')), 'totalDiario'],
+          [sequelize.literal("SUM(IF(estado = 'PENDIENTE', 1, 0))"), 'totalPendientes'],
+          [sequelize.literal("SUM(IF(estado = 'PAGADO', 1, 0))"), 'totalPagados'],
+          [sequelize.literal("SUM(IF(estado = 'CANCELADO', 1, 0))"), 'totalCancelados'],
+          [sequelize.literal("SUM(IF(tipo = 'RESERVA', 1, 0))"), 'totalReservas'],
+          [sequelize.literal("SUM(IF(tipo = 'LLEVAR', 1, 0))"), 'totalLlevar'],
+          [sequelize.literal("SUM(IF(tipo = 'LLEVAR', total, 0))"), 'montoLlevar'],
+          [sequelize.literal("SUM(IF(estado = 'PENDIENTE', total, 0))"), 'montoPendiente'],
+          [sequelize.literal("SUM(IF(estado = 'PAGADO', total, 0))"), 'montoPagado']
+        ]
+      })
+      if (totales.count === 0) {
+        return {
+          totalPedidos: 0,
+          montoDiario: 0,
+          totalPendientes: 0,
+          totalPagados: 0,
+          totalCancelados: 0,
+          totalReservas: 0,
+          totalLlevar: 0,
+          montoPendiente: 0,
+          montoPagado: 0,
+          montoLlevar: 0
+        }
+      }
+      return {
+        totalPedidos: totales.count,
+        montoDiario: parseFloat(totales.rows[0].dataValues.totalDiario) || 0,
+        totalPendientes: parseInt(totales.rows[0].dataValues.totalPendientes) || 0,
+        totalPagados: parseInt(totales.rows[0].dataValues.totalPagados) || 0,
+        totalCancelados: parseInt(totales.rows[0].dataValues.totalCancelados) || 0,
+        totalReservas: parseInt(totales.rows[0].dataValues.totalReservas) || 0,
+        totalLlevar: parseInt(totales.rows[0].dataValues.totalLlevar) || 0,
+        montoPendiente: parseFloat(totales.rows[0].dataValues.montoPendiente) || 0,
+        montoPagado: parseFloat(totales.rows[0].dataValues.montoPagado) || 0,
+        montoLlevar: parseFloat(totales.rows[0].dataValues.montoLlevar) || 0
+      }
+    } catch (error) {
+      throw new VentaErrorComun('Error al obtener los totales diarios')
+    }
   }
 }

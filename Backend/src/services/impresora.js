@@ -7,12 +7,27 @@ export class ImpresoraServicio {
   constructor () {
     this.pageWidth = 226 // Ancho de página en puntos (80mm)
     this.ticketPath = path.join(process.cwd(), 'ticket.pdf')
+    this.isPrinting = false // 🔒 Flag para controlar impresión
+    this.printQueue = [] // Cola de impresión
   }
 
   async imprimirVenta (venta) {
     try {
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirVenta(venta)
+          })
+        })
+      }
+      // bloqueo de impresora
+      this.isPrinting = true
       await this.generarPDFVenta(venta)
       await this.imprimirPDF()
+      this.isPrinting = false
+      this.processNextInQueue()
       console.log('✅ Ticket de venta impreso correctamente')
     } catch (error) {
       console.error('❌ Error al imprimir ticket de venta:', error)
@@ -27,10 +42,68 @@ export class ImpresoraServicio {
 
   async imprimirTicketCocina (venta) {
     try {
+      // Si ya se está imprimiendo, agregar a la cola
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirTicketCocina(venta)
+          })
+        })
+      }
+
+      // Bloquear impresora
+      this.isPrinting = true
+
       await this.generarPDFCocina(venta)
       await this.imprimirPDF()
+      // Desbloquear y procesar siguiente en cola
+      this.isPrinting = false
+      this.processNextInQueue()
     } catch (error) {
       console.error('❌ Error al imprimir ticket de cocina:', error)
+      this.isPrinting = false
+      this.processNextInQueue()
+    }
+  }
+
+  async imprimirReservaAsignada (venta) {
+    try {
+      // Si ya se está imprimiendo, agregar a la cola
+      if (this.isPrinting) {
+        return new Promise((resolve) => {
+          this.printQueue.push({
+            venta,
+            resolve,
+            imprimirFuncion: () => this.imprimirReservaAsignada(venta)
+          })
+        })
+      }
+
+      // Bloquear impresora
+      this.isPrinting = true
+
+      await this.generarPDFReservaAsignada(venta)
+      await this.imprimirPDF()
+      // Desbloquear y procesar siguiente en cola
+      this.isPrinting = false
+      this.processNextInQueue()
+    } catch (error) {
+      console.error('❌ Error al imprimir reserva asignada:', error)
+      this.isPrinting = false
+      this.processNextInQueue()
+    }
+  }
+
+  processNextInQueue () {
+    if (this.printQueue.length > 0) {
+      const next = this.printQueue.shift()
+      setTimeout(() => {
+        next.imprimirFuncion()
+          .then(() => next.resolve())
+          .catch(() => next.resolve())
+      }, 1000) // Esperar 1 segundo entre impresiones
     }
   }
 
@@ -54,10 +127,13 @@ export class ImpresoraServicio {
       doc.text('--------------------------------')
       // ===== DETALLES =====
       doc.fontSize(9)
+      console.log(venta)
       doc.text(`Venta: ${venta.codigo}`)
       doc.text(`Fecha: ${venta.fecha} ${venta.hora}`)
-      doc.text(`Mesero: ${venta.mesero}`)
-      doc.text(`Mesa: ${venta.mesa}`)
+      if (venta.tipo !== 'LLEVAR') {
+        doc.text(`Mesero: ${venta.mesero}`)
+        doc.text(`Mesa: ${venta.mesa}`)
+      }
       doc.moveDown()
       // ===== encabezado cantidad x producto PU,subtotal =====
       // guarda la posicion actual en y
@@ -133,16 +209,38 @@ export class ImpresoraServicio {
       const stream = fs.createWriteStream(this.ticketPath)
       doc.pipe(stream)
       // ===== CONTENIDO =====
-      doc
-        .fontSize(14)
-        .text('PEDIDO COCINA', { align: 'center' })
-      doc.moveDown()
-      doc.fontSize(12)
-        .text(`Venta: ${venta.codigo}`)
-        .text(`Mesa: ${venta.mesa}`)
-        .text(`Mesero: ${venta.mesero}`)
-      doc.text(`Fecha: ${venta.fecha}`)
-      doc.text(`Hora: ${venta.hora}`)
+      if (venta.tipo === 'RESERVA') {
+        doc.fontSize(14).text('RESERVA COCINA', { align: 'center' })
+        doc.text(`Venta: ${venta.codigo}`)
+        doc.text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+        doc.text(`Hora: ${venta.hora}`)
+        if (venta.observaciones) {
+          doc.text(`Observacion: ${venta.observaciones || 'Sin observaciones'}`)
+        }
+      }
+      if (venta.tipo === 'LLEVAR') {
+        doc.fontSize(14).text('PEDIDO PARA LLEVAR', { align: 'center' })
+        doc.moveDown()
+        doc.fontSize(12)
+          .text(`Venta: ${venta.codigo}`)
+          .text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+        doc.text(`Hora: ${venta.hora}`)
+        if (venta.observaciones) {
+          doc.text(`Observacion: ${venta.observaciones || 'Sin observaciones'}`)
+        }
+        doc.moveDown()
+      }
+      if (venta.tipo === 'NORMAL') {
+        doc
+          .fontSize(14)
+          .text('PEDIDO COCINA', { align: 'center' })
+        doc.moveDown()
+        doc.fontSize(12)
+          .text(`Venta: ${venta.codigo}`)
+          .text(`Mesa: ${venta.mesa}`)
+          .text(`Mesero: ${venta.mesero}`)
+        doc.text(`Hora: ${venta.hora}`)
+      }
       doc.moveDown()
       doc.text('--------------------------------')
       doc.moveDown()
@@ -191,6 +289,91 @@ export class ImpresoraServicio {
         doc.moveDown()
       })
       doc.moveDown()
+      doc.text('------------', { align: 'center' })
+
+      doc.end()
+
+      stream.on('finish', resolve)
+    })
+  }
+
+  generarPDFReservaAsignada (venta) {
+    return new Promise((resolve) => {
+      const doc = new PDFDocument({
+        size: [226, 1000],
+        margins: { top: 5, bottom: 5, left: 5, right: 5 }
+      })
+      const stream = fs.createWriteStream(this.ticketPath)
+      doc.pipe(stream)
+
+      // ===== ENCABEZADO =====
+      doc.fontSize(14).text('RESERVA ASIGNADA', { align: 'center' })
+      doc.moveDown()
+
+      // ===== DETALLES =====
+      doc.fontSize(11)
+      doc.text(`Venta: ${venta.codigo}`)
+      doc.text(`Cliente: ${venta?.cliente || 'Sin nombre'}`)
+      doc.text(`Mesero: ${venta.mesero}`)
+      doc.text(`Mesa: ${venta.mesa}`)
+      doc.text(`Hora: ${venta.hora}`)
+      if (venta.observaciones) {
+        doc.text(`Observación: ${venta.observaciones}`)
+      }
+
+      doc.moveDown()
+      doc.text('--------------------------------')
+      doc.moveDown()
+
+      // ===== encabezado cantidad x producto =====
+      const y = doc.y
+      doc.fontSize(11).text('PRODUCTOS', 5, y, {
+        width: 140,
+        align: 'left'
+      })
+
+      doc.fontSize(11).text('CANTIDAD', 150, y, {
+        width: 70,
+        align: 'right'
+      })
+
+      doc.moveDown()
+
+      // ===== PRODUCTOS =====
+      venta.items.forEach(p => {
+        const y = doc.y
+
+        // ===== NOMBRE PRODUCTO (columna izquierda)
+        doc
+          .fontSize(10)
+          .text(p.nombre, 5, y, {
+            width: 140,
+            align: 'left'
+          })
+
+        // ===== CANTIDAD DE PRODUCTOS (columna derecha fija)
+        doc
+          .fontSize(12)
+          .text(` ${p.cantidad}`, 150, y, {
+            width: 60,
+            align: 'right'
+          })
+
+        // ===== LINEA PARA OBSERVACIONES
+        if (p.observaciones) {
+          doc.fontSize(9)
+            .text(`Obs: ${p.observaciones}`, 10, doc.y, { align: 'left' })
+        }
+
+        doc.moveDown()
+      })
+
+      doc.moveDown()
+      doc.text('--------------------------------', { align: 'center' })
+      doc.moveDown()
+      doc.fontSize(10)
+        .text('Reserva registrada', { align: 'center' })
+
       doc.end()
 
       stream.on('finish', resolve)

@@ -4,7 +4,7 @@ import { ProductoSinStockError, StockInsuficienteError, VentaErrorComun, VentaSe
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
 
 export class VentaServicio {
-  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora }) {
+  constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora, cajeroServicio }) {
     this.modeloVenta = modeloVenta
     this.modeloDetalle = modeloDetalle
     this.modeloProducto = modeloProducto
@@ -12,6 +12,7 @@ export class VentaServicio {
     this.modeloStock = modeloStockPlato
     this.modeloUsuario = modeloUsuario
     this.impresora = impresora
+    this.cajeroServicio = cajeroServicio
   }
 
   async ventasDelDiaDetallados () {
@@ -150,7 +151,7 @@ export class VentaServicio {
   }
 
   async crearVenta ({ body, usuarioId, io }) {
-    const { clienteNombre, nroMesa, estado, detalle, tipo, observaciones, fechaReserva } = body
+    const { clienteNombre, nroMesa, estado, detalle, tipo, observaciones, fechaReserva, metodoPago } = body
     const transaction = await sequelize.transaction()
     try {
       const venta = await this.modeloVenta.create({
@@ -179,6 +180,10 @@ export class VentaServicio {
           cliente: clienteNombre,
           total
         })
+      }
+      if (tipo === 'LLEVAR') {
+        await this.imprimirVenta({ ventaId: venta.id, metodoPago })
+        await this.cajeroServicio.registrarPago({ body: { ventaId: venta.id, metodoPago }, usuarioId, io })
       }
       await this.imprimirTicketCocina({ ventaId: venta.id })
     } catch (error) {
@@ -277,6 +282,7 @@ export class VentaServicio {
           total: venta.total
         })
       }
+      await this.imprimirTicketCocinaParcial({ ventaId: venta.id, detalle })
     } catch (error) {
       await transaction.rollback()
       throw error
@@ -292,6 +298,9 @@ export class VentaServicio {
             model: this.modeloProducto,
             attributes: ['nombre']
           }]
+        }, {
+          model: this.modeloUsuario,
+          attributes: ['nombre']
         }]
       })
       if (!venta) {
@@ -308,6 +317,8 @@ export class VentaServicio {
         clienteNombre: venta.clienteNombre ?? '',
         total: venta.total,
         estado: venta.estado,
+        tipo: venta.tipo,
+        mesero: venta.Usuario?.nombre || 'Desconocido',
         total_items: venta.DetallePedidos.length ?? 0,
         productos: Object.values(dataAgrupada(venta.DetallePedidos)),
         observaciones: venta.observaciones ?? '',
@@ -341,7 +352,7 @@ export class VentaServicio {
   async imprimirVenta ({ ventaId, metodoPago }) {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        attributes: ['id', 'codigo', 'nroMesa', 'clienteNombre', 'total', 'createdAt'],
+        attributes: ['id', 'codigo', 'nroMesa', 'clienteNombre', 'total', 'tipo', 'createdAt'],
         include: [{
           model: this.modeloDetalle,
           attributes: ['cantidad', 'subtotal', 'precioUnitario'],
@@ -365,6 +376,7 @@ export class VentaServicio {
         cliente: venta.clienteNombre || 'Consumidor Final',
         mesero: venta.Usuario?.nombre || 'Desconocido',
         fecha,
+        tipo: venta.tipo,
         hora,
         total: Number(venta.total),
         metodoPago: metodoPago || 'No especificado',
@@ -384,7 +396,7 @@ export class VentaServicio {
   async imprimirTicketCocina ({ ventaId }) {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, {
-        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt'],
+        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt', 'tipo', 'observaciones'],
         include: [{
           model: this.modeloDetalle,
           attributes: ['cantidad', 'observaciones'],
@@ -404,17 +416,82 @@ export class VentaServicio {
       })
       const DtoTicketCocina = {
         codigo: venta.codigo,
-        mesa: venta.nroMesa,
+        mesa: venta.nroMesa || 'No asignada',
         cliente: venta.clienteNombre || 'Sin nombre',
         mesero: venta.Usuario?.nombre || 'Desconocido',
+        tipo: venta.tipo,
         fecha,
         hora,
+        observaciones: venta.observaciones || null,
         items: venta.DetallePedidos.map(item => ({
           nombre: item.Producto?.nombre || 'Producto Desconocido',
           cantidad: Number(item.cantidad),
           observaciones: item.observaciones || null
         }))
       }
+      return await this.impresora.imprimirTicketCocina(DtoTicketCocina)
+    } catch (error) {
+      throw new VentaErrorComun('Error al imprimir el ticket de cocina: ' + error.message)
+    }
+  }
+
+  async imprimirTicketCocinaParcial ({ ventaId, detalle }) {
+    try {
+      if (!detalle || detalle.length === 0) {
+        return
+      }
+
+      const productos = await this.modeloProducto.findAll({
+        where: { id: detalle.map(item => item.productoId) },
+        attributes: ['id', 'nombre', 'esPreparado']
+      })
+
+      const items = detalle.map(item => {
+        const producto = productos.find(p => p.id === item.productoId)
+        if (!producto || !producto.esPreparado) {
+          return null
+        }
+        return {
+          nombre: producto.nombre || 'Producto Desconocido',
+          cantidad: Number(item.cantidad),
+          observaciones: item.observaciones || null
+        }
+      }).filter(Boolean)
+
+      if (items.length === 0) {
+        return
+      }
+
+      const venta = await this.modeloVenta.findByPk(ventaId, {
+        attributes: ['codigo', 'nroMesa', 'clienteNombre', 'createdAt', 'tipo', 'observaciones'],
+        include: [{
+          model: this.modeloUsuario,
+          attributes: ['nombre']
+        }]
+      })
+
+      if (!venta) {
+        throw new VentaSearchError(`Venta con ID ${ventaId} no encontrada`)
+      }
+
+      const fecha = venta.createdAt.toLocaleDateString('es-BO')
+      const hora = venta.createdAt.toLocaleTimeString('es-BO', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+
+      const DtoTicketCocina = {
+        codigo: venta.codigo,
+        mesa: venta.nroMesa || 'No asignada',
+        cliente: venta.clienteNombre || 'Sin nombre',
+        mesero: venta.Usuario?.nombre || 'Desconocido',
+        tipo: venta.tipo,
+        fecha,
+        hora,
+        observaciones: venta.observaciones || null,
+        items
+      }
+
       return await this.impresora.imprimirTicketCocina(DtoTicketCocina)
     } catch (error) {
       throw new VentaErrorComun('Error al imprimir el ticket de cocina: ' + error.message)

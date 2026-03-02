@@ -1,20 +1,16 @@
-import { LayoutDashboard, UserCheck, Users, ShoppingCart, ClipboardPenLine, ClipboardList, Warehouse, Archive, Tag } from "lucide-react";
+import { LayoutDashboard, Archive, Tag, FileCog, HandCoins, UserCog } from "lucide-react";
 
 export  const menuItems = [
     { title: "Dashboard", path: "/home", icon: LayoutDashboard, exact: true },
     {
-      title: "Gestión Usuarios", icon: UserCheck, key: "usuarios",
-      subItems: [
-        { title: "Usuarios", path: "/home/usuarios", icon: Users }
-      ]
+      title: "Gestionar Usuarios",path: "/home/usuarios", icon: UserCog, key: "usuarios"
     },
-    { title: "Gestión Ventas", icon: ShoppingCart, key:"ventas",
-      subItems:[
-        {title: "Realizar Pedidos", path: "/home/pedido/listar", icon: ClipboardPenLine},
-        {title: "Ver Pedidos", path:"/home/pedido/ver-pedidos", icon: ClipboardList}
-      ]
+    { 
+      title: "Gestinar Pedidos", path:"/home/ajustes-venta", icon: FileCog, key:"ventas",
      },
-    { title: "Gestión Inventario", path: "/home/inventario", icon: Warehouse },
+    { 
+      title: "Modo Cajero", path: "/cajero", icon: HandCoins, key: "cajero",
+    },
     {
       title: "Gestión Producto", icon: Archive, key: "productos",
       subItems: [

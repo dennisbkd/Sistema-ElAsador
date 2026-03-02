@@ -7,6 +7,8 @@ export const rutaVentasAdmin = ({ ventasAdminServicio }) => {
   const controladorVentasAdmin = new ControladorVentaAdmin({ ventasAdminServicio })
 
   rutas.get('/ventas-admin', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.obtenerVentasAdmin)
+  rutas.get('/venta-admin/ventas-por-mesas', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.obtenerVentasPorMesas)
+  rutas.get('/venta-admin/totales-del-dia', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.obtenerTotalesDiarios)
   rutas.get('/venta-admin/:id', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.obtenerVentaPorId)
   rutas.post('/venta-admin/:id/agregar-producto-mesero', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.agregarProductoAPedidoMesero)
   rutas.post('/venta-admin/:id/asignar-reserva-mesero', verificarRol(['ADMINISTRADOR', 'CAJERO']), controladorVentasAdmin.asignarReservaAMesero)

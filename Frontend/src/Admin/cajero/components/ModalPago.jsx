@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { useRegistrarPago } from '../hooks/useCajaQuery'
 
-export const ModalPago = ({ venta, onClose, onPagoRegistrado }) => {
+export const ModalPago = ({ venta, onClose, onPagoRegistrado, id }) => {
   const [metodoSeleccionado, setMetodoSeleccionado] = useState('EFECTIVO')
   const [montoRecibido, setMontoRecibido] = useState('')
   const [isRegistrando, setIsRegistrando] = useState(false)
@@ -64,7 +64,7 @@ export const ModalPago = ({ venta, onClose, onPagoRegistrado }) => {
     setIsRegistrando(true)
     try {
       await registrarPagoMutation.mutateAsync({
-        ventaId: venta.id,
+        ventaId: id,
         metodoPago: metodoSeleccionado
       })
 
@@ -109,7 +109,7 @@ export const ModalPago = ({ venta, onClose, onPagoRegistrado }) => {
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Receipt className="w-4 h-4" />
               <span>{venta.codigo}</span>
-              {venta.mesa && <span>• Mesa {venta.mesa}</span>}
+              <span className='font-bold'>{venta.nroMesa && <span>• Mesa {venta.nroMesa}</span>}</span>
             </div>
           </div>
           <button

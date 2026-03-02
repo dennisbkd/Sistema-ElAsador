@@ -1,17 +1,44 @@
 // pages/cajero/VentaDetallePage.jsx
-import { useParams, useNavigate } from 'react-router'
-import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw } from 'lucide-react'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router'
+import { ArrowLeft, Printer, Clock, Users, DollarSign, AlertCircle, ChefHat, RefreshCcw, User, UserPlus, Table, FilePen, Coins } from 'lucide-react'
 import { VentaInfoGeneral } from '../components/detalleComponents/VentaInfoGeneral'
 import { VentaProductosList } from '../components/detalleComponents/VentaProductosList'
 import { useAjusteVentaIdManager } from '../../ajustes/hooks/useAjusteVentaIdManager'
 import { useAjustesManager } from '../../ajustes/hooks/useAjustesManager'
+import { useState } from 'react'
+import { AsignarMeseroModal } from '../components/detalleComponents/AsignarMeseroModal'
+import { useCajaManager } from '../hooks/useCajaManager'
+import { BotonAccion } from '../../../ui/boton/BotonAccion'
+import { ModalPago } from '../components/ModalPago'
 
 export const VentaDetallePage = () => {
   const { ventaId } = useParams()
   const navigate = useNavigate()
+  const [showAsignarMesero, setShowAsignarMesero] = useState(false)
+  const [showModalPago, setShowModalPago] = useState(false)
+  const [searchParams] = useSearchParams()
+  const page = searchParams.get('page')
+  const location = useLocation().state
+  const state = location?.state || {}
 
   const { isLoading, error, venta } = useAjusteVentaIdManager(ventaId)
   const { imprimirVenta, isPendingImprimir, imprimirComandaCocina } = useAjustesManager({})
+  const { asignarMeseroPedido, isPending: isAsignando } = useCajaManager()
+
+  const handleAsignarMesero = async (datos) => {
+    asignarMeseroPedido({
+      ventaId: Number(ventaId),
+      usuarioId: Number(datos.meseroId),
+      nroMesa: datos.nroMesa
+    })
+    setShowAsignarMesero(false)
+  }
+
+  const volverACaja = () => {
+    navigate(page ?
+      `/cajero/caja?page=${page}&filtroEstado=${state.filtroEstado || 'TODOS'}&filtroTipo=${state.filtroTipo || 'TODOS'}`
+      : '/cajero/caja')
+  }
 
   if (isLoading) {
     return (
@@ -36,7 +63,7 @@ export const VentaDetallePage = () => {
             </div>
           </div>
           <button
-            onClick={() => navigate('/cajero/caja')}
+            onClick={volverACaja}
             className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Volver a Caja
@@ -45,7 +72,6 @@ export const VentaDetallePage = () => {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -53,7 +79,7 @@ export const VentaDetallePage = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate('/cajero/caja')}
+              onClick={volverACaja}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-6 h-6 text-gray-600" />
@@ -67,30 +93,82 @@ export const VentaDetallePage = () => {
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="w-4 h-4" />
-                  <span>Mesa {venta.nroMesa}</span>
+                  <span>Mesa {venta.nroMesa || 'Sin asignar'}</span>
                 </div>
+                {venta.mesero && (
+                  <div className="flex items-center gap-1">
+                    <User className="w-4 h-4" />
+                    <span className="font-medium">{venta.mesero}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-1">
                   <DollarSign className="w-4 h-4" />
                   <span className="font-medium">Bs {parseFloat(venta.total).toFixed(2)}</span>
                 </div>
+                {/* tipo de venta */}
+                <span className="px-2 py-1 bg-green-100 text-gray-800 text-xs font-medium rounded-full">{venta.tipo}</span>
+
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <button type='button' disabled={isPendingImprimir} onClick={() => imprimirVenta(ventaId)} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-2 transition-colors">
-              <Printer className="w-4 h-4" />
-              Imprimir
-            </button>
-            <button type='button' disabled={isPendingImprimir} onClick={() => imprimirComandaCocina(ventaId)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors">
-              {isPendingImprimir ? (
-                <RefreshCcw size={16} className='animate-spin' />
-              ) : (
-                <ChefHat className="w-4 h-4" />
-              )}
-              Imprimir
-              Ticket Cocina
-            </button>
+            {venta.estado !== 'PAGADO' && (
+              <BotonAccion
+                icon={Coins}
+                label={'Cobrar'}
+                onClick={() => setShowModalPago(prev => !prev)}
+              />
+            )}
+            <BotonAccion
+              icon={FilePen}
+              label={'Modificar Pedido'}
+              variant='edit'
+              onClick={() => navigate(`/home/ajustes-venta/pedido/${ventaId}`, {
+                state: {
+                  from: `/cajero/venta/${ventaId}`,
+                  filtroEstado: location?.state?.filtroEstado || 'TODOS',
+                  filtroTipo: location?.state?.filtroTipo || 'TODOS',
+                  page: page || 1
+                }
+              })}
+            />
+            <BotonAccion
+              icon={Printer}
+              label={'Imprimir Venta'}
+              onClick={() => imprimirVenta(ventaId)}
+              disabled={isPendingImprimir}
+              variant='edit'
+            />
+            <BotonAccion
+              icon={ChefHat}
+              label={'Imprimir Comanda'}
+              onClick={() => imprimirComandaCocina(ventaId)}
+              disabled={isPendingImprimir}
+              variant='edit'
+            />
+            {/* Botón para abrir modal de asignación */}
+            {venta.tipo === 'RESERVA' && venta.estado === 'PENDIENTE' && (
+              <button
+                onClick={() => setShowAsignarMesero(true)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${venta.mesero
+                  ? 'bg-green-600 text-white hover:bg-green-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+              >
+                {venta.mesero ? (
+                  <>
+                    <User className="w-4 h-4" />
+                    <span>Mesero: {venta.mesero}</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Asignar Mesero</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -105,7 +183,7 @@ export const VentaDetallePage = () => {
 
           {/* Columna derecha - Productos */}
           <div className="space-y-6">
-            <VentaProductosList productos={venta.productos} totalItems={venta.total_items} />
+            <VentaProductosList total={venta.total} productos={venta.productos} totalItems={venta.total_items} />
 
             {/* Observaciones */}
             {venta.observaciones && (
@@ -137,9 +215,47 @@ export const VentaDetallePage = () => {
                     : 'Venta cancelada'}
               </span>
             </div>
+
+            {/* Info adicional */}
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              {venta.nroMesa && (
+                <div className="flex items-center gap-1">
+                  <Table className="w-4 h-4" />
+                  <span>Mesa {venta.nroMesa}</span>
+                </div>
+              )}
+              {venta.mesero && (
+                <div className="flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  <span>{venta.mesero}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Modal de asignación */}
+      <AsignarMeseroModal
+        isOpen={showAsignarMesero}
+        onClose={() => setShowAsignarMesero(false)}
+        venta={venta}
+        onAsignarMesero={handleAsignarMesero}
+        isAsignando={isAsignando}
+      />
+      {/* Modal de pago */}
+      {
+        showModalPago && (
+          <ModalPago
+            venta={venta}
+            id={ventaId}
+            onPagoRegistrado={() => {
+              setShowModalPago(false)
+            }}
+            onClose={() => setShowModalPago(false)}
+          />
+        )
+      }
+    </div >
   )
 }

@@ -30,7 +30,7 @@ export const VentaLayout = ({
     productosEncontrados,
     isLoadingBusqueda,
     isErrorBusqueda,
-    isErrorProducto } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce, activo: true })
+    isErrorProducto } = useProductoManager({ filtro: categoriaId, nombre: nombreDebonce, activo: true, limit: 100 })
 
   //efecto para hacer scroll al cambiar de categoria
   useEffect(() => {
@@ -67,7 +67,7 @@ export const VentaLayout = ({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-dvh bg-gray-50 pb-20">
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between mb-4">
           <div>
