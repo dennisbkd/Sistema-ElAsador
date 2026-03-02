@@ -1,5 +1,5 @@
 // pages/cajero/components/CajaFilters.jsx
-import { Search, X } from 'lucide-react'
+import { Search, X, RefreshCw } from 'lucide-react'
 import { BotonAccion } from '../../../ui/boton/BotonAccion'
 
 export const CajaBusqueda = ({
@@ -16,9 +16,14 @@ export const CajaBusqueda = ({
           placeholder="Buscar por cliente, mesa..."
           value={busqueda}
           onChange={(e) => onBusquedaChange(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
         />
+        {isLoading && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <RefreshCw className="w-5 h-5 text-blue-600 animate-spin" />
+          </div>
+        )}
       </div>
       <BotonAccion
         icon={X}

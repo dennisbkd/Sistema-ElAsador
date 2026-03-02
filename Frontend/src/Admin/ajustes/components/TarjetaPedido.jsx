@@ -14,15 +14,13 @@ export const TarjetaPedido = ({ pedido, filtroTipo, filtroEstado, page, estados,
 
   // Navegar a detalle del pedido
   const verDetallePedido = (pedido) => {
-    navigate(`/home/ajustes-venta/pedido/${pedido.id}`, {
+    navigate(`/home/ajustes-venta/pedido/${pedido.id}?page=${page}&filtroEstado=${filtroEstado}&filtroTipo=${filtroTipo}`, {
       state: {
         filtroEstado,
         filtroTipo,
-        page
       }
     })
   }
-
 
   // Obtener color según estado
   const getColorEstado = (estado) => {

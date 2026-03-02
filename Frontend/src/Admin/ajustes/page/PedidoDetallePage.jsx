@@ -96,12 +96,11 @@ export const PedidoDetallePage = () => {
   }
 
   const { subtotal, total } = calcularTotales()
-
   // Manejar acciones
   const handleAccion = (accionId) => {
     switch (accionId) {
       case 'volver':
-        navigate(fromVenta ? from : '/home/ajustes-venta', {
+        navigate(fromVenta ? from : `/home/ajustes-venta?page=${page}&filtroEstado=${filtroEstado || 'TODOS'}&filtroTipo=${filtroTipo || 'TODOS'}`, {
           state: { filtroEstado, filtroTipo, page, from }
         })
         break

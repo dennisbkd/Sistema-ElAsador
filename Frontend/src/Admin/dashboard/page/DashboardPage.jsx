@@ -108,7 +108,7 @@ export function DashboardPage() {
       </motion.div>
     )
   }
-  console.log('data', resumenQuery.data)
+
   return (
     <motion.div
       initial="hidden"

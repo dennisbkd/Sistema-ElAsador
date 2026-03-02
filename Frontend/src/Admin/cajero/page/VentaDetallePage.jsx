@@ -202,7 +202,9 @@ export const VentaDetallePage = () => {
                 ? 'bg-green-100 text-green-800'
                 : venta.estado === 'PENDIENTE'
                   ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-red-100 text-red-800'
+                  : venta.estado === 'LISTO'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-red-100 text-red-800'
                 }`}>
                 {venta.estado}
               </div>
@@ -211,7 +213,9 @@ export const VentaDetallePage = () => {
                   ? 'Venta pagada completamente'
                   : venta.estado === 'PENDIENTE'
                     ? 'Esperando pago'
-                    : 'Venta cancelada'}
+                    : venta.estado === 'LISTO'
+                      ? 'Venta lista para ser pagada'
+                      : 'Venta cancelada'}
               </span>
             </div>
 

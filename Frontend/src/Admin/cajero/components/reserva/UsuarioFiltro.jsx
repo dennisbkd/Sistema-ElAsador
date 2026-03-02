@@ -1,7 +1,7 @@
 // components/reserva/UsuarioFiltro.jsx
 import { SpinnerCargando } from "../../../../ui/spinner/SpinnerCargando"
-import { Filter } from "lucide-react"
 import { useUsuarioAdministrador } from "../../../usuarios/hooks/useUsuarioAdministrador"
+import { SelectOption } from "../../../../components/SelectOption"
 
 export const UsuarioFiltro = ({
   usuarioId,
@@ -10,7 +10,7 @@ export const UsuarioFiltro = ({
   className = "",
   disabled = false
 }) => {
-  const { usuarios, isLoading: isLoadingUsuarios } = useUsuarioAdministrador({ rol: 'MESERO' })
+  const { usuarios, isLoading: isLoadingUsuarios } = useUsuarioAdministrador({ rol: 'MESERO', limit: 100, activo: true })
 
   if (isLoadingUsuarios) {
     return (
@@ -21,28 +21,26 @@ export const UsuarioFiltro = ({
     )
   }
 
+  // Convertir datos de usuarios al formato que necesita SelectOption
+  const usuariosOptions = usuarios.map((usuario) => ({
+    value: String(usuario.id),
+    label: usuario.nombre
+  }))
+
   return (
-    <div className={`relative ${className}`}>
-      <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-      <select
-        value={usuarioId || ''}
-        onChange={(e) => {
-          // Solo actualiza el estado local, no llama a la API
-          setUsuarioId(e.target.value || null)
+    <div className={`${disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}>
+      <SelectOption
+        props={{ className }}
+        value={usuarioId ? String(usuarioId) : ''}
+        placeholder={placeholder}
+        options={usuariosOptions}
+        selectValue={(value) => {
+          if (!disabled) {
+            // Solo actualiza el estado local, no llama a la API
+            setUsuarioId(value ? Number(value) : null)
+          }
         }}
-        disabled={disabled}
-        className={`w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg 
-               focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
-               transition-all duration-200 outline-none appearance-none bg-white
-               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-      >
-        <option value="">{placeholder}</option>
-        {usuarios.map((usuario) => (
-          <option key={usuario.id} value={usuario.id}>
-            {usuario.nombre}
-          </option>
-        ))}
-      </select>
+      />
     </div>
   )
 }
