@@ -27,8 +27,6 @@ import { FiltroEstadoVenta } from '../../../components/FiltroEstadoVenta'
 import { CajaBusqueda } from '../components/CajaBusqueda'
 
 export const CajaPage = () => {
-  const [filtroEstado, setFiltroEstado] = useState('TODOS')
-  const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [busqueda, setBusqueda] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
   const [mostrarCerrarCaja, setMostrarCerrarCaja] = useState(false)
@@ -37,8 +35,8 @@ export const CajaPage = () => {
   const filtroMesaNombreDebounce = useDebonce({ value: busqueda, delay: 300 })
   const navigate = useNavigate()
   const paginaFromUrl = Number(searchParams.get('page') || 1)
-  const filtroEstadoFromUrl = searchParams.get('filtroEstado') || 'TODOS'
-  const filtroTipoFromUrl = searchParams.get('filtroTipo') || 'TODOS'
+  const filtroEstado = searchParams.get('filtroEstado') || 'TODOS'
+  const filtroTipo = searchParams.get('filtroTipo') || 'TODOS'
   const { pedidos,
     ventasEncontradas,
     cargando,
@@ -50,12 +48,13 @@ export const CajaPage = () => {
     isPendingImprimir
   } = useAjustesManager({
     filtros: {
-      filtroEstado: filtroEstadoFromUrl !== 'TODOS' ? filtroEstadoFromUrl : undefined,
-      tipoVenta: filtroTipoFromUrl !== 'TODOS' ? filtroTipoFromUrl : undefined
+      filtroEstado: filtroEstado !== 'TODOS' ? filtroEstado : undefined,
+      tipoVenta: filtroTipo !== 'TODOS' ? filtroTipo : undefined
     },
     filtroMesaNombre: filtroMesaNombreDebounce,
     pageUrl: paginaFromUrl
   })
+
   const ventas = useMemo(() => {
     const hayBusqueda = busqueda.trim().length > 0
     return hayBusqueda ? ventasEncontradas : pedidos
@@ -84,14 +83,11 @@ export const CajaPage = () => {
     newParams.set('filtroEstado', nuevoEstado)
     newParams.set('filtroTipo', nuevoTipo)
     newParams.set('page', '1')
-    setFiltroEstado(nuevoEstado)
-    setFiltroTipo(nuevoTipo)
     setSearchParams(newParams)
   }
 
   const handleVerDetalle = (id) => {
-    setSearchParams({ page: String(page) })
-    navigate(`/cajero/venta/${id}?page=${page}`, {
+    navigate(`/cajero/venta/${id}?page=${page}&filtroEstado=${filtroEstado}&filtroTipo=${filtroTipo}`, {
       state: {
         filtroEstado,
         filtroTipo,
@@ -102,11 +98,15 @@ export const CajaPage = () => {
 
   const handleSiguiente = () => {
     if (ventas.length < 5) return
-    setSearchParams({ page: String(page + 1) })
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', String(page + 1))
+    setSearchParams(newParams)
   }
 
   const handleAnterior = () => {
-    setSearchParams({ page: String(page - 1) })
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', String(page - 1))
+    setSearchParams(newParams)
   }
 
   if (cargando) {
@@ -158,7 +158,11 @@ export const CajaPage = () => {
           <CajaEmptyState
             mensaje="No se encontraron ventas que coincidan con los filtros."
             onResetFilters={() => {
-              setFiltroEstado('PENDIENTE')
+              const newParams = new URLSearchParams()
+              newParams.set('filtroEstado', 'PENDIENTE')
+              newParams.set('filtroTipo', 'TODOS')
+              newParams.set('page', '1')
+              setSearchParams(newParams)
               setBusqueda('')
             }}
           />

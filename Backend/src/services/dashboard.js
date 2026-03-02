@@ -54,6 +54,10 @@ export class DashboardServicio {
             createdAt: {
               [Op.gte]: horaInicial,
               [Op.lt]: horaFinal
+            },
+            estado: {
+              [Op.ne]: 'CANCELADO',
+              [Op.eq]: 'PAGADO'
             }
           },
           raw: true
@@ -68,6 +72,9 @@ export class DashboardServicio {
             createdAt: {
               [Op.gte]: horaInicial,
               [Op.lt]: horaFinal
+            },
+            estado: {
+              [Op.ne]: 'CANCELADO'
             }
           },
           raw: true
@@ -136,6 +143,9 @@ export class DashboardServicio {
           createdAt: {
             [Op.gte]: horaInicial,
             [Op.lt]: horaFinal
+          },
+          estado: {
+            [Op.ne]: 'CANCELADO'
           }
         },
         group: [sequelize.fn('HOUR', sequelize.col('createdAt'))],
@@ -181,6 +191,14 @@ export class DashboardServicio {
             model: this.modeloProducto,
             attributes: [],
             required: true
+          },
+          {
+            model: this.modeloVenta,
+            attributes: [],
+            required: true,
+            where: {
+              estado: 'PAGADO'
+            }
           }
         ],
         where: {
@@ -360,6 +378,9 @@ export class DashboardServicio {
           createdAt: {
             [Op.gte]: horaInicial,
             [Op.lt]: horaFinal
+          },
+          estado: {
+            [Op.eq]: 'PAGADO'
           }
         },
         group: ['tipo'],
@@ -469,7 +490,7 @@ export class DashboardServicio {
           [Op.lte]: fin
         },
         estado: {
-          [Op.ne]: 'CANCELADO'
+          [Op.eq]: 'PAGADO'
         }
       }
 
