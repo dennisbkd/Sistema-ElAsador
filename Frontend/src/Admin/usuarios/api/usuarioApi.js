@@ -1,9 +1,8 @@
 import { instancia } from "../../../config/axios"
 
-export const ObtenerUsuarios = async (page, filtroRol) => {
-  const limit = 5
+export const ObtenerUsuarios = async (page, filtroRol, limit = 5, activo) => {
   const offset = (page - 1) * limit
-  const response = await instancia.get(`/usuario/obtener?offset=${offset}&limit=${limit}&filtroRol=${filtroRol}`)
+  const response = await instancia.get(`/usuario/obtener?offset=${offset}&limit=${limit}&filtroRol=${filtroRol}&activo=${activo}`)
   
   return response.data
 }

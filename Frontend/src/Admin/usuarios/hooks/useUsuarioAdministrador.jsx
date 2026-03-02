@@ -2,9 +2,9 @@ import { useModal } from "../../../hooks/useModal"
 import { useCambiarEstadoUsuario, useEliminarUsuario, useTotalUsuarios, useUsuarios } from "./useUsuarioQuery"
 
 
-export const useUsuarioAdministrador = ({ rol }) => {
+export const useUsuarioAdministrador = ({ rol, activo, limit = 5 }) => {
   const modalEliminar = useModal()
-  const { usuarioQuery, siguiente, anterior, filtrarRol, page } = useUsuarios({ rol })
+  const { usuarioQuery, siguiente, anterior, filtrarRol, page } = useUsuarios({ rol, activo, limit })
   const { data: totalUsuarios, isLoading: isLoadingTotal, error: errorTotal } = useTotalUsuarios()
   const eliminarUsuarioMutation = useEliminarUsuario()
   const estadoUsuarioMutation = useCambiarEstadoUsuario()

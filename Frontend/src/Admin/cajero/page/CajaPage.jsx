@@ -32,7 +32,7 @@ export const CajaPage = () => {
   const [mostrarCerrarCaja, setMostrarCerrarCaja] = useState(false)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
-  const filtroMesaNombreDebounce = useDebonce({ value: busqueda, delay: 300 })
+  const filtroMesaNombreDebounce = useDebonce({ value: busqueda, delay: 500 })
   const navigate = useNavigate()
   const paginaFromUrl = Number(searchParams.get('page') || 1)
   const filtroEstado = searchParams.get('filtroEstado') || 'TODOS'
