@@ -18,9 +18,8 @@ export const VentaDetallePage = () => {
   const [showModalPago, setShowModalPago] = useState(false)
   const [searchParams] = useSearchParams()
   const page = searchParams.get('page')
-  const location = useLocation().state
+  const location = useLocation()
   const state = location?.state || {}
-
   const { isLoading, error, venta } = useAjusteVentaIdManager(ventaId)
   const { imprimirVenta, isPendingImprimir, imprimirComandaCocina } = useAjustesManager({})
   const { asignarMeseroPedido, isPending: isAsignando } = useCajaManager()
