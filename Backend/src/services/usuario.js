@@ -5,10 +5,15 @@ export class UsuarioServicio {
     this.modelVenta = modelVenta
   }
 
-  async obtenerUsuarios (offset, limit, filtroRol) {
+  async obtenerUsuarios (offset, limit, filtroRol, activo) {
     const where = {}
     if (filtroRol) {
       where.rol = filtroRol
+    }
+    if (activo !== undefined && activo !== null && activo !== '') {
+      // Convertir string a booleano si es necesario (puede venir como 'true' o true)
+      const activoBooleano = activo === true || activo === 'true'
+      where.activo = activoBooleano
     }
 
     try {

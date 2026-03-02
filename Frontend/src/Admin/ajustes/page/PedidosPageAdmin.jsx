@@ -24,27 +24,35 @@ import {
 } from 'lucide-react'
 import { useAjustesManager } from '../hooks/useAjustesManager'
 import { TarjetaPedido } from '../components/TarjetaPedido'
+import { FiltroEstadoVenta } from '../../../components/FiltroEstadoVenta'
+import { useSearchParams } from 'react-router'
+import { useDebonce } from '../../gestion-items/producto/hooks/useDebonce'
 export const PedidosPageAdmin = () => {
-  const [filtroEstado, setFiltroEstado] = useState('TODOS')
-  const [filtroTipo, setFiltroTipo] = useState('TODOS')
   const [busqueda, setBusqueda] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const paginaFromUrl = Number(searchParams.get('page') || 1)
+  const filtroEstado = searchParams.get('filtroEstado') || 'TODOS'
+  const filtroTipo = searchParams.get('filtroTipo') || 'TODOS'
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const filtroMesaNombreDebounce = useDebonce({ value: busqueda, delay: 500 })
 
   const {
     pedidos,
     cargando,
     error,
+    ventasEncontradas,
+    isLoadingVentasPorMesas,
     refetch,
     cambiarEstadoVenta,
     isPendingCambiarEstado,
-    anteriorPagina,
-    siguientePagina,
     page
   } = useAjustesManager({
     filtros: {
       filtroEstado: filtroEstado !== 'TODOS' ? filtroEstado : undefined,
       tipoVenta: filtroTipo !== 'TODOS' ? filtroTipo : undefined
-    }
+    },
+    filtroMesaNombre: filtroMesaNombreDebounce,
+    pageUrl: paginaFromUrl
   })
 
   // Estados disponibles
@@ -65,30 +73,30 @@ export const PedidosPageAdmin = () => {
 
   // Filtrar pedidos por búsqueda en el frontend
   const pedidosFiltrados = useMemo(() => {
-    if (!pedidos || pedidos.error) return []
-
-    let filtrados = [...pedidos]
-
-    // Filtrar por búsqueda
-    if (busqueda.trim()) {
-      const termino = busqueda.toLowerCase()
-      filtrados = filtrados.filter(pedido =>
-        pedido.codigo?.toLowerCase().includes(termino) ||
-        pedido.clienteNombre?.toLowerCase().includes(termino) ||
-        pedido.mesero?.toLowerCase().includes(termino) ||
-        pedido.nroMesa?.toString().includes(termino)
-      )
-    }
-
-    return filtrados
-  }, [pedidos, busqueda])
+    const hayBusqueda = busqueda.trim().length > 0
+    return hayBusqueda ? ventasEncontradas : pedidos
+  }, [busqueda, ventasEncontradas, pedidos])
 
 
   // Manejar cambio de filtro
   const handleCambiarFiltro = (nuevoEstado, nuevoTipo) => {
-    setFiltroEstado(nuevoEstado)
-    setFiltroTipo(nuevoTipo)
-    refetch() // Forzar recarga
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('filtroEstado', nuevoEstado)
+    newParams.set('filtroTipo', nuevoTipo)
+    newParams.set('page', '1')
+    setSearchParams(newParams)
+  }
+  const handleSiguiente = () => {
+    if (pedidosFiltrados.length < 5) return
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', String(page + 1))
+    setSearchParams(newParams)
+  }
+
+  const handleAnterior = () => {
+    const newParams = new URLSearchParams(searchParams)
+    newParams.set('page', String(page - 1))
+    setSearchParams(newParams)
   }
 
   // Calcular totales
@@ -145,9 +153,14 @@ export const PedidosPageAdmin = () => {
             placeholder="Buscar por código, cliente, mesero o mesa..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={cargando}
           />
+          {isLoadingVentasPorMesas && (
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+              <RefreshCw className="w-5 h-5 text-blue-600 animate-spin" />
+            </div>
+          )}
         </div>
       </div>
 
@@ -161,51 +174,15 @@ export const PedidosPageAdmin = () => {
             className="overflow-hidden"
           >
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Filtro por estado */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Estado del Pedido</label>
-                  <div className="flex flex-wrap gap-2">
-                    {estados.map(estado => (
-                      <button
-                        key={estado.valor}
-                        onClick={() => handleCambiarFiltro(estado.valor, filtroTipo)}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors
-                          ${filtroEstado === estado.valor
-                            ? estado.color.replace('100', '600').replace('800', '50') + ' text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        disabled={cargando}
-                      >
-                        <estado.icon className="w-4 h-4" />
-                        {estado.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Filtro por tipo */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Venta</label>
-                  <div className="flex flex-wrap gap-2">
-                    {tiposVenta.map(tipo => (
-                      <button
-                        key={tipo.valor}
-                        onClick={() => handleCambiarFiltro(filtroEstado, tipo.valor)}
-                        className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors
-                          ${filtroTipo === tipo.valor
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                          }`}
-                        disabled={cargando}
-                      >
-                        <tipo.icon className="w-4 h-4" />
-                        {tipo.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <FiltroEstadoVenta
+                cargando={cargando}
+                estados={estados}
+                filtroEstado={filtroEstado}
+                filtroTipo={filtroTipo}
+                handleCambiarFiltro={handleCambiarFiltro}
+                mostrarFiltros={mostrarFiltros}
+                tiposVenta={tiposVenta}
+              />
             </div>
           </motion.div>
         )}
@@ -213,7 +190,7 @@ export const PedidosPageAdmin = () => {
 
       {/* Contenido principal */}
       <main className="p-6">
-        {cargando ? (
+        {cargando || isLoadingVentasPorMesas ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             <p className="ml-4 text-gray-600">Cargando pedidos...</p>
@@ -271,6 +248,7 @@ export const PedidosPageAdmin = () => {
                       filtroTipo={filtroTipo}
                       estados={estados}
                       page={page}
+
                       cambiarEstadoVenta={cambiarEstadoVenta}
                       isPendingCambiarEstado={isPendingCambiarEstado}
                     />
@@ -302,29 +280,33 @@ export const PedidosPageAdmin = () => {
               </div>
             )}
             {/* Paginación */}
-            <div className="mt-8 flex justify-center items-center gap-4">
-              <button
-                onClick={anteriorPagina}
-                disabled={cargando}
-                className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center gap-2"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                Anterior
-              </button>
+            {
+              busqueda.trim() === '' && (
+                <div className="mt-8 flex justify-center items-center gap-4">
+                  <button
+                    onClick={handleAnterior}
+                    disabled={cargando || isLoadingVentasPorMesas}
+                    className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                    Anterior
+                  </button>
 
-              <div className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
-                Página {page}
-              </div>
+                  <div className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
+                    Página {page}
+                  </div>
 
-              <button
-                onClick={siguientePagina}
-                disabled={cargando}
-                className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center gap-2"
-              >
-                Siguiente
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+                  <button
+                    onClick={handleSiguiente}
+                    disabled={cargando || isLoadingVentasPorMesas}
+                    className="px-4 py-2 rounded-lg border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    Siguiente
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )
+            }
           </>
         )}
       </main>

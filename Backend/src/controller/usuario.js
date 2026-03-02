@@ -14,7 +14,7 @@ export class ControladorUsuario {
   }
 
   obtenerUsuarios = this.#manejarRespuesta((req) =>
-    this.UsuarioServicio.obtenerUsuarios(req.query.offset, req.query.limit, req.query.filtroRol))
+    this.UsuarioServicio.obtenerUsuarios(req.query.offset, req.query.limit, req.query.filtroRol, req.query.activo))
 
   editarUsuario = this.#manejarRespuesta((req) =>
     this.UsuarioServicio.editarUsuario({ data: req.body, id: req.params.id }))

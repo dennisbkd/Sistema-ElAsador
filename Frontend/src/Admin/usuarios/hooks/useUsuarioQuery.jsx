@@ -4,11 +4,11 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { useEffect } from "react";
 
-export const useUsuarios = ({ rol }) => {
+export const useUsuarios = ({ rol, activo, limit = 5 }) => {
   const [page, setPage] = useState(1);
   const usuarioQuery = useQuery({
-    queryKey: ['usuarios', { page, rol }],
-    queryFn: () => ObtenerUsuarios(page, rol),
+    queryKey: ['usuarios', { page, rol, limit, activo }],
+    queryFn: () => ObtenerUsuarios(page, rol, limit, activo),
     staleTime: 1000 * 60 * 5, // 5 minutos
   })
 
