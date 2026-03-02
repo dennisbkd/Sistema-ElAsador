@@ -152,7 +152,7 @@ export const ModalPago = ({ venta, onClose, onPagoRegistrado, id }) => {
                     }
                   }}
                   className={`
-                    p-4 rounded-lg border-2 flex flex-col items-center justify-center gap-2
+                    p-2 rounded-lg border-2 flex flex-col items-center justify-center gap-2
                     transition-all duration-200
                     ${isSelected
                       ? `border-${metodo.color}-500 bg-${metodo.color}-50`

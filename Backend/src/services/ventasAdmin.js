@@ -283,10 +283,9 @@ export class VentasAdminServicio {
           await detalle.destroy({ transaction })
         } else {
           const precioUnitario = Number(detalle.precioUnitario)
-          const cantidad = Number(detalle.cantidad)
           totalAnulado += precioUnitario * restante
           detalle.cantidad -= restante
-          detalle.subtotal = cantidad * precioUnitario
+          detalle.decrement('subtotal', { by: precioUnitario * restante, transaction })
           await detalle.save({ transaction })
           restante = 0
         }
@@ -411,6 +410,9 @@ export class VentasAdminServicio {
               horaInicial,
               horaFinal
             ]
+          },
+          estado: {
+            [Op.ne]: 'CANCELADO'
           }
         },
         attributes: [
