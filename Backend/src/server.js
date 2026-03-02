@@ -4,6 +4,7 @@ import { CajaSesion, Categoria, DetalleVenta, MovimientoStock, Pago, Producto, S
 import { AuthServicio } from './services/auth.js'
 import { CajeroServicio } from './services/cajero.js'
 import { CategoriaServicio } from './services/categoria.js'
+import { DashboardServicio } from './services/dashboard.js'
 import { ImpresoraServicio } from './services/impresora.js'
 import { ProductoServicio } from './services/producto.js'
 import { StockServicio } from './services/stock.js'
@@ -13,6 +14,7 @@ import { VentaServicio } from './services/ventas.js'
 import { VentasAdminServicio } from './services/ventasAdmin.js'
 
 const usuarioServicio = new UsuarioServicio({ modelUsuario: Usuario, modelVenta: Venta })
+const impresoraServicio = new ImpresoraServicio()
 const ventaServicio = new VentaServicio(
   {
     modeloVenta: Venta,
@@ -21,7 +23,8 @@ const ventaServicio = new VentaServicio(
     modeloCategoria: Categoria,
     modeloStockPlato: StockPlato,
     modeloUsuario: Usuario,
-    impresora: new ImpresoraServicio()
+    impresora: impresoraServicio,
+    cajeroServicio: null
   }
 )
 const stockServicio = new StockServicio({
@@ -55,7 +58,8 @@ const ventasAdminServicio = new VentasAdminServicio({
   modeloDetalleVenta: DetalleVenta,
   modeloProducto: Producto,
   modeloStockPlato: StockPlato,
-  modeloUsuario: Usuario
+  modeloUsuario: Usuario,
+  impresora: impresoraServicio
 })
 
 const cajeroServicio = new CajeroServicio({
@@ -66,4 +70,14 @@ const cajeroServicio = new CajeroServicio({
   modeloUsuario: Usuario
 })
 
-App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio })
+ventaServicio.cajeroServicio = cajeroServicio
+
+const dashboardServicio = new DashboardServicio({
+  modeloVenta: Venta,
+  modeloDetalle: DetalleVenta,
+  modeloProducto: Producto,
+  modeloPago: Pago,
+  modeloCategoria: Categoria
+})
+
+App({ usuarioServicio, ventaServicio, stockServicio, categoriaServicio, productoServicio, authServicio, ventasAdminServicio, cajeroServicio, dashboardServicio })
