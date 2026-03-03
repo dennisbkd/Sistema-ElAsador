@@ -40,8 +40,8 @@ export function SocketConfig (server) {
 
   const io = new Server(server, {
     cors: corsConfig,
-    pingTimeout: 60000,
-    pingInterval: 30000
+    pingTimeout: 120000,
+    pingInterval: 25000
   })
 
   io.on('connection', (socket) => {
