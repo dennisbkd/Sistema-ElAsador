@@ -4,6 +4,10 @@ import toast from "react-hot-toast"
 
 //Todo: mejorar los toast.error para que muestren mensajes más específicos según el error recibido
 
+const obtenerMensajeError = (error, mensajeFallback) => {
+  return error?.response?.data?.mensaje || error?.response?.data?.error || mensajeFallback
+}
+
 export const useVentaPorUsuario = ({ filtroEstado }) => {
   const pedidosQuery = useQuery({
     queryKey: ['venta-mobile-del-dia', filtroEstado],
@@ -28,9 +32,11 @@ export const useCrearVenta = () => {
     onSuccess: () => {
       toast.success('Venta creada con éxito')
       clientQuery.invalidateQueries({ queryKey: ['venta-mobile-del-dia'] })
+      clientQuery.invalidateQueries({ queryKey: ['productos'], exact: false })
+      clientQuery.invalidateQueries({ queryKey: ['busqueda-producto-nombre'], exact: false })
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || 'Error al crear el producto')
+      toast.error(obtenerMensajeError(error, 'Error al crear la venta'))
     }
   })
 }
@@ -44,9 +50,11 @@ export const useAgregarProductoAVenta = () => {
       toast.success('Producto agregado a la venta con éxito')
       clientQuery.invalidateQueries({ queryKey: ['venta-mobile-del-dia'] })
       clientQuery.invalidateQueries({ queryKey: ['venta-mobile-id'] })
+      clientQuery.invalidateQueries({ queryKey: ['productos'], exact: false })
+      clientQuery.invalidateQueries({ queryKey: ['busqueda-producto-nombre'], exact: false })
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || 'Error al agregar el producto a la venta')
+      toast.error(obtenerMensajeError(error, 'Error al agregar el producto a la venta'))
     }
   })
 }

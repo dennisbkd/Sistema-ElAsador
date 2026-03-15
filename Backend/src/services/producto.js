@@ -1,5 +1,6 @@
 import { Op } from 'sequelize'
 import { sequelize } from '../model/index.js'
+import { emitirStockActualizado } from '../utils/socketEvents.js'
 
 export class ProductoServicio {
   constructor ({ modeloProducto, modeloStock, modeloCategoria, modeloDetalleVenta }) {
@@ -119,6 +120,7 @@ export class ProductoServicio {
       stock
     } = body
     const actualizarDatos = {}
+    let stockActualizado = null
     try {
       const existeProducto = await this.modeloProducto.findByPk(id, { transaction })
       if (!existeProducto) {
@@ -139,6 +141,12 @@ export class ProductoServicio {
         if (stock.cantidad !== undefined) stockPlato.cantidad = stock.cantidad
         if (stock.cantidadMinima !== undefined) stockPlato.cantidadMinima = stock.cantidadMinima
         await stockPlato.save({ transaction })
+
+        stockActualizado = {
+          productoId: Number(existeProducto.id),
+          cantidad: Number(stockPlato.cantidad) || 0,
+          cantidadMinima: Number(stockPlato.cantidadMinima) || 0
+        }
       }
       if (file) {
         const imagenPath = `/uploads/productos/${file.filename}`
@@ -153,6 +161,12 @@ export class ProductoServicio {
           nombre: actualizarDatos.nombre || existeProducto.nombre,
           id: existeProducto.id,
           mensaje: 'El producto ha sido actualizado.'
+        })
+
+        emitirStockActualizado({
+          io,
+          origen: 'PRODUCTO_EDITADO',
+          productos: stockActualizado ? [stockActualizado] : []
         })
       }
     } catch (error) {

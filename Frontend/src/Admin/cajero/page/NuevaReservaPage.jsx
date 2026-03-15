@@ -1,5 +1,5 @@
 // pages/reserva/NuevaReservaPCPage.jsx
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
 import { motion } from "motion/react"
@@ -28,7 +28,6 @@ export const NuevaReservaPage = () => {
     horaReserva: '',
     observaciones: ''
   })
-  const { isConnected } = useSocketMesero()
 
   // Hook para manejar carrito
   const {
@@ -37,9 +36,21 @@ export const NuevaReservaPage = () => {
     getCantidad,
     getObservacion,
     carrito,
+    sincronizarStock,
     limpiarCarrito,
     totalItems
   } = useCarrito()
+
+  const handleStockActualizado = useCallback((payload) => {
+    const productosActualizados = payload?.productos
+    if (!Array.isArray(productosActualizados) || productosActualizados.length === 0) {
+      return
+    }
+
+    sincronizarStock(productosActualizados)
+  }, [sincronizarStock])
+
+  const { isConnected } = useSocketMesero({ onStockActualizado: handleStockActualizado })
 
   // Hook para crear reserva
   const { crearVenta, isPending } = useVentaMobileManager({})
@@ -69,6 +80,16 @@ export const NuevaReservaPage = () => {
 
       if (totalItems === 0) {
         toast.error('Agrega al menos un producto a la reserva')
+        return
+      }
+
+      const productosSinStock = Object.values(carrito).filter((item) => {
+        const stockDisponible = Number(item.producto?.stock?.cantidad) || 0
+        return item.cantidad > stockDisponible
+      })
+
+      if (productosSinStock.length > 0) {
+        toast.error('El stock cambió en tiempo real. Ajusta el carrito antes de confirmar la venta.')
         return
       }
 

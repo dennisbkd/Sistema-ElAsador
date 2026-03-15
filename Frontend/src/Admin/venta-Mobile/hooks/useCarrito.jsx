@@ -31,7 +31,7 @@ export const useCarrito = () => {
         delete nuevoCarrito[producto.id]
         return nuevoCarrito
       }
-      const stockDisponible = producto.stock?.cantidad || 0
+      const stockDisponible = Number(producto.stock?.cantidad) || 0
       const cantidadFinal = Math.min(cantidad, stockDisponible)
 
       if (cantidadFinal <= 0) {
@@ -75,6 +75,68 @@ export const useCarrito = () => {
     })
   }, [])
 
+  const sincronizarStock = useCallback((productosStock = []) => {
+    if (!Array.isArray(productosStock) || productosStock.length === 0) {
+      return
+    }
+
+    const stockPorProducto = new Map(
+      productosStock
+        .map((item) => [
+          Number(item?.productoId),
+          Math.max(0, Number(item?.cantidad) || 0)
+        ])
+        .filter(([productoId]) => Number.isFinite(productoId))
+    )
+
+    if (stockPorProducto.size === 0) {
+      return
+    }
+
+    setCarrito((carritoAnterior) => {
+      let huboCambios = false
+      const nuevoCarrito = {}
+
+      for (const item of Object.values(carritoAnterior)) {
+        const productoId = Number(item.producto.id)
+        const stockActual = stockPorProducto.get(productoId)
+
+        if (stockActual === undefined) {
+          nuevoCarrito[item.producto.id] = item
+          continue
+        }
+
+        const cantidadAjustada = Math.min(item.cantidad, stockActual)
+
+        if (cantidadAjustada <= 0) {
+          huboCambios = true
+          continue
+        }
+
+        const stockPrevio = Number(item.producto.stock?.cantidad) || 0
+        const productoActualizado = {
+          ...item.producto,
+          stock: {
+            ...(item.producto.stock || {}),
+            cantidad: stockActual
+          }
+        }
+
+        if (cantidadAjustada !== item.cantidad || stockPrevio !== stockActual) {
+          huboCambios = true
+        }
+
+        nuevoCarrito[item.producto.id] = {
+          ...item,
+          producto: productoActualizado,
+          cantidad: cantidadAjustada
+        }
+      }
+
+      return huboCambios ? nuevoCarrito : carritoAnterior
+    })
+  }, [])
+
   const limpiarCarrito = useCallback(() => {
     setCarrito({})
   }, [])
@@ -104,6 +166,7 @@ export const useCarrito = () => {
   return {
     agregarProducto,
     removerProducto,
+    sincronizarStock,
     limpiarCarrito,
     getCantidad,
     actualizarObservacion,

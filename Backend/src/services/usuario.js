@@ -10,7 +10,7 @@ export class UsuarioServicio {
     if (filtroRol) {
       where.rol = filtroRol
     }
-    if (activo !== undefined && activo !== null && activo !== '') {
+    if (activo !== undefined && activo !== null && activo !== '' && activo !== 'undefined') {
       // Convertir string a booleano si es necesario (puede venir como 'true' o true)
       const activoBooleano = activo === true || activo === 'true'
       where.activo = activoBooleano

@@ -40,7 +40,7 @@ export const UsuarioPage = () => {
     cambiarEstadoUsuario,
     siguiente,
     anterior,
-  } = useUsuarioAdministrador({ rol: filtroRol })
+  } = useUsuarioAdministrador({ rol: filtroRol, activo: undefined })
 
   const form = useAppForm({
     defaultValues: configuracionFormulario.defaultValues,

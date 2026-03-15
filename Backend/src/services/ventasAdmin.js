@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { VentaCantidadError, VentaErrorComun, VentaSearchError } from '../errors/index.js'
 import { sequelize } from '../model/index.js'
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
+import { emitirStockActualizado } from '../utils/socketEvents.js'
 export class VentasAdminServicio {
   constructor ({
     ventaServicio,
@@ -91,6 +92,10 @@ export class VentasAdminServicio {
       const esNumero = !isNaN(filtroNumero)
       // Si el filtro es un número, buscar por nroMesa, si no, buscar por clienteNombre
       const ventasMesas = await this.modeloVenta.findAll({
+        include: [{
+          modelo: this.modeloUsuario,
+          attributes: ['nombre']
+        }],
         where: {
           [Op.or]: [
             esNumero ? { nroMesa: filtroNumero } : null,
@@ -298,16 +303,27 @@ export class VentasAdminServicio {
       })
 
       // 5️ devolver stock
+      const stockActualizado = []
       if (devolverStock) {
         const stockPlato = await this.modeloStockPlato.findOne({
           where: { productoId },
+          lock: transaction.LOCK.UPDATE,
           transaction
         })
 
         if (stockPlato) {
+          const cantidadADevolver = Number(cantidad)
+          const nuevaCantidad = Number(stockPlato.cantidad) + cantidadADevolver
+
           await stockPlato.increment('cantidad', {
-            by: Number(cantidad),
+            by: cantidadADevolver,
             transaction
+          })
+
+          stockActualizado.push({
+            productoId: Number(productoId),
+            cantidad: Math.max(0, nuevaCantidad),
+            cantidadMinima: Number(stockPlato.cantidadMinima) || 0
           })
         }
       }
@@ -315,6 +331,12 @@ export class VentasAdminServicio {
       await transaction.commit()
       // fixed: arreglar mas adelante para que notifique al mesero correspondiente
       if (io) {
+        emitirStockActualizado({
+          io,
+          origen: 'VENTA_PRODUCTO_ANULADO',
+          productos: stockActualizado
+        })
+
         io.emit('productoActualizado', { id: productoId, mensaje: devolverStock ? 'Se actualizo el stock' : 'Producto anulado sin devolución de stock' })
       }
     } catch (error) {
@@ -345,19 +367,57 @@ export class VentasAdminServicio {
         transaction
       })
 
-      for (const detalle of detallesVenta) {
-        const productoStock = await this.modeloStockPlato.findOne({ where: { productoId: detalle.productoId } }, transaction)
+      const cantidadPorProducto = detallesVenta.reduce((acc, detalle) => {
+        const productoId = Number(detalle.productoId)
+        const cantidadDetalle = Number(detalle.cantidad) || 0
+
+        if (!Number.isFinite(productoId) || cantidadDetalle <= 0) {
+          return acc
+        }
+
+        if (!acc[productoId]) {
+          acc[productoId] = 0
+        }
+
+        acc[productoId] += cantidadDetalle
+        return acc
+      }, {})
+
+      const stockActualizado = []
+
+      for (const [productoId, cantidadDevuelta] of Object.entries(cantidadPorProducto)) {
+        const productoStock = await this.modeloStockPlato.findOne({
+          where: { productoId: Number(productoId) },
+          lock: transaction.LOCK.UPDATE,
+          transaction
+        })
 
         if (!productoStock) {
           continue
         }
 
-        await productoStock.increment('cantidad', { by: detalle.cantidad, transaction })
-        await productoStock.save({ transaction })
+        const nuevaCantidad = Number(productoStock.cantidad) + Number(cantidadDevuelta)
+
+        await productoStock.increment('cantidad', {
+          by: Number(cantidadDevuelta),
+          transaction
+        })
+
+        stockActualizado.push({
+          productoId: Number(productoId),
+          cantidad: Math.max(0, nuevaCantidad),
+          cantidadMinima: Number(productoStock.cantidadMinima) || 0
+        })
       }
       await transaction.commit()
       // FIXED: AGREGAR EL MODELO DE MOTIVO DE LA ANULACION Y NOTIFICAR AL MESERO CORRESPONDIENTE
       if (io) {
+        emitirStockActualizado({
+          io,
+          origen: 'VENTA_ANULADA',
+          productos: stockActualizado
+        })
+
         io.emit('productoActualizado', { id: new Date().toISOString(), mensaje: 'Se anulo una venta y se actualizó el stock' })
       }
     } catch (error) {

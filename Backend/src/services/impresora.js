@@ -120,8 +120,8 @@ export class ImpresoraServicio {
       // ===== ENCABEZADO =====
       doc.fontSize(14).text('RESTAURANTE EL ASADOR', { align: 'center' })
       doc.fontSize(9)
-        .text('Calle Falsa 123', { align: 'center' })
-        .text('Tel: 12345678', { align: 'center' })
+        .text('Calle Sucre #3', { align: 'center' })
+        .text('Tel: 75054506', { align: 'center' })
 
       doc.moveDown()
       doc.text('--------------------------------')

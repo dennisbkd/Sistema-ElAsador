@@ -2,6 +2,7 @@ import { Op } from 'sequelize'
 import { sequelize } from '../model/index.js'
 import { ProductoSinStockError, StockInsuficienteError, VentaErrorComun, VentaSearchError } from '../errors/index.js'
 import { horaFinal, horaInicial } from '../utils/tiempo.js'
+import { emitirStockActualizado } from '../utils/socketEvents.js'
 
 export class VentaServicio {
   constructor ({ modeloVenta, modeloDetalle, modeloProducto, modeloCategoria, modeloStockPlato, modeloUsuario, impresora, cajeroServicio }) {
@@ -164,7 +165,7 @@ export class VentaServicio {
         usuarioId
       }, { transaction })
 
-      await this.validarYActualizarStock(detalle, transaction)
+      const stockActualizado = await this.validarYActualizarStock(detalle, transaction)
       // generamos el detalle de la venta
       const { detalleVentaMap, total } = await this.generarDetalleVenta(detalle, venta.id, transaction)
       // guardamos el detalle de la venta
@@ -173,6 +174,12 @@ export class VentaServicio {
       await venta.update({ total, codigo }, { transaction })
       await transaction.commit()
       if (io) {
+        emitirStockActualizado({
+          io,
+          origen: 'VENTA_CREADA',
+          productos: stockActualizado
+        })
+
         io.emit('ventaCreada', {
           ventaId: venta.id,
           codigo,
@@ -229,9 +236,34 @@ export class VentaServicio {
     return `VE-${day}${month}${year}-${id.toString().padStart(4, '0') || '0001'}`
   }
 
+  agruparDetallePorProducto (detalle) {
+    return Object.values(
+      detalle.reduce((acc, item) => {
+        const productoId = Number(item.productoId)
+        const cantidad = Number(item.cantidad) || 0
+
+        if (!Number.isFinite(productoId) || cantidad <= 0) {
+          return acc
+        }
+
+        if (!acc[productoId]) {
+          acc[productoId] = {
+            productoId,
+            cantidad: 0
+          }
+        }
+
+        acc[productoId].cantidad += cantidad
+        return acc
+      }, {})
+    ).sort((a, b) => a.productoId - b.productoId)
+  }
+
   async validarYActualizarStock (detalle, transaction) {
-    detalle.sort((a, b) => a.productoId - b.productoId)
-    for (const item of detalle) {
+    const detalleAgrupado = this.agruparDetallePorProducto(detalle)
+    const stockActualizado = []
+
+    for (const item of detalleAgrupado) {
       const stock = await this.modeloStock.findOne({
         where: { productoId: item.productoId },
         lock: transaction.LOCK.UPDATE,
@@ -248,8 +280,18 @@ export class VentaServicio {
         throw new StockInsuficienteError(stock.Producto?.nombre || `Producto ID ${item.productoId}`, stock.cantidad, item.cantidad
         )
       }
+
+      const nuevaCantidad = Number(stock.cantidad) - Number(item.cantidad)
       await stock.decrement('cantidad', { by: item.cantidad, transaction })
+
+      stockActualizado.push({
+        productoId: Number(item.productoId),
+        cantidad: Math.max(0, nuevaCantidad),
+        cantidadMinima: Number(stock.cantidadMinima) || 0
+      })
     }
+
+    return stockActualizado
   }
 
   async agregarProductoAVenta ({ body, ventaId, io }) {
@@ -258,15 +300,16 @@ export class VentaServicio {
     try {
       const venta = await this.modeloVenta.findByPk(ventaId, { transaction })
 
-      if (['CANCELADO', 'PAGADO', 'LISTO'].includes(venta.estado)) {
-        throw new VentaErrorComun('No se puede agregar productos a esta venta')
-      }
-
       if (!venta) {
         await transaction.rollback()
         throw new VentaSearchError(`Venta con ID ${ventaId} no encontrada`)
       }
-      await this.validarYActualizarStock(detalle, transaction)
+
+      if (['CANCELADO', 'PAGADO', 'LISTO'].includes(venta.estado)) {
+        throw new VentaErrorComun('No se puede agregar productos a esta venta')
+      }
+
+      const stockActualizado = await this.validarYActualizarStock(detalle, transaction)
 
       const { detalleVentaMap, total } = await this.generarDetalleVenta(detalle, venta.id, transaction)
 
@@ -274,6 +317,12 @@ export class VentaServicio {
       await venta.increment('total', { by: total, transaction })
       await transaction.commit()
       if (io) {
+        emitirStockActualizado({
+          io,
+          origen: 'PRODUCTO_AGREGADO_A_VENTA',
+          productos: stockActualizado
+        })
+
         io.emit('productoAgregadoAVenta', {
           ventaId: venta.id,
           codigo: venta.codigo,
