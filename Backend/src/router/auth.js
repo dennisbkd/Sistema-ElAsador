@@ -6,6 +6,7 @@ export const rutaAuth = ({ authServicio }) => {
   const authControlador = new AuthControlador({ authServicio })
 
   ruta.post('/iniciar-sesion', authControlador.iniciarSesion)
+  ruta.post('/renovar', authControlador.renovarToken)
 
   return ruta
 }

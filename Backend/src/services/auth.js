@@ -36,4 +36,35 @@ export class AuthServicio {
       }
     }
   }
+
+  // Renovar un token todavía válido, extendiendo la sesión sin pedir credenciales de nuevo
+  async renovarToken ({ headers }) {
+    const authHeader = headers?.authorization
+    const existeToken = authHeader?.split(' ')[1]
+
+    if (!existeToken) {
+      throw new AuthSesionError('Token no encontrado')
+    }
+
+    let decodificado
+    try {
+      decodificado = this.token.verificarToken(existeToken)
+    } catch (error) {
+      throw new AuthSesionError('Token inválido o vencido')
+    }
+
+    const nuevoToken = this.token.crearToken({
+      id: decodificado.id,
+      usuario: decodificado.usuario,
+      rol: decodificado.rol
+    })
+
+    return {
+      usuario: {
+        userName: decodificado.usuario,
+        rol: decodificado.rol
+      },
+      token: nuevoToken
+    }
+  }
 }

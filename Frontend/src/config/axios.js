@@ -5,6 +5,7 @@ import { getValidToken } from "../utils/tokenUtils";
 // Crear instancia sin baseURL inicial
 const instancia = axios.create({
   withCredentials: false,
+  timeout: 15000,
 })
 
 // Interceptor para agregar baseURL dinámicamente en cada request

@@ -23,4 +23,5 @@ export class AuthControlador {
   }
 
   iniciarSesion = this.#manejarRespuesta((req) => this.authServicio.iniciarSesion({ body: req.body }), 200)
+  renovarToken = this.#manejarRespuesta((req) => this.authServicio.renovarToken({ headers: req.headers }), 200)
 }

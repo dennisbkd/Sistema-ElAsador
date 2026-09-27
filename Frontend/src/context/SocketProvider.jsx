@@ -38,12 +38,7 @@ export const SocketProvider = ({ children }) => {
     const socketUrl = getSocketUrl()
 
     const nuevaConexionIo = io(socketUrl, {
-      auth: {
-        usuario: {
-          id: decodeToken?.id,
-          usuario: decodeToken?.usuario
-        }
-      },
+      auth: (cb) => cb({ token: getValidToken() }),
       autoConnect: true,
       transports: ['websocket', 'polling'],
       timeout: 10000,
@@ -75,6 +70,15 @@ export const SocketProvider = ({ children }) => {
     nuevaConexionIo.on('connect_error', (error) => {
       if (process.env.NODE_ENV === 'development') {
         console.error('Socket error:', error.message)
+      }
+
+      const erroresDeSesion = ['TOKEN_EXPIRED', 'TOKEN_INVALID', 'TOKEN_MISSING']
+      if (erroresDeSesion.includes(error.message)) {
+        nuevaConexionIo.disconnect()
+        clearAuthData()
+        if (window.location.pathname !== '/') {
+          window.location.href = '/'
+        }
       }
     })
 
@@ -154,6 +158,17 @@ export const SocketProvider = ({ children }) => {
     if (!socket || typeof window === 'undefined') return
 
     const forzarReconexion = () => {
+      // Si el token ya venció mientras la pestaña estaba en background, no tiene
+      // sentido reintentar: cerramos sesión de una vez en lugar de reconectar en bucle.
+      if (!getValidToken()) {
+        socket.disconnect()
+        clearAuthData()
+        if (window.location.pathname !== '/') {
+          window.location.href = '/'
+        }
+        return
+      }
+
       if (!socket.connected) {
         socket.connect()
       }
@@ -173,14 +188,24 @@ export const SocketProvider = ({ children }) => {
       setIsConnected(false)
     }
 
+    const onPageShow = (event) => {
+      // iOS Safari puede restaurar la pestaña desde bfcache sin disparar
+      // visibilitychange de forma confiable; forzamos la misma revisión aquí.
+      if (event.persisted) {
+        forzarReconexion()
+      }
+    }
+
     document.addEventListener('visibilitychange', onVisibilityChange)
     window.addEventListener('online', onOnline)
     window.addEventListener('offline', onOffline)
+    window.addEventListener('pageshow', onPageShow)
 
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange)
       window.removeEventListener('online', onOnline)
       window.removeEventListener('offline', onOffline)
+      window.removeEventListener('pageshow', onPageShow)
     }
   }, [socket])
 

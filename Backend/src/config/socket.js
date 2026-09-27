@@ -1,4 +1,5 @@
 import { Server } from 'socket.io'
+import { Token } from './token.js'
 
 export function SocketConfig (server) {
   // Configuración de CORS para Socket.IO
@@ -44,8 +45,33 @@ export function SocketConfig (server) {
     pingInterval: 25000
   })
 
+  const token = new Token()
+
+  io.use((socket, next) => {
+    const jwtToken = socket.handshake.auth?.token
+
+    if (!jwtToken) {
+      return next(new Error('TOKEN_MISSING'))
+    }
+
+    try {
+      const usuarioDecodificado = token.verificarToken(jwtToken)
+      socket.data.usuario = {
+        id: usuarioDecodificado.id,
+        usuario: usuarioDecodificado.usuario,
+        rol: usuarioDecodificado.rol
+      }
+      next()
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return next(new Error('TOKEN_EXPIRED'))
+      }
+      return next(new Error('TOKEN_INVALID'))
+    }
+  })
+
   io.on('connection', (socket) => {
-    const usuarioId = socket.handshake.auth.usuario?.id || null
+    const usuarioId = socket.data.usuario?.id || null
 
     if (usuarioId) {
       socket.join(`usuario_${usuarioId}`)

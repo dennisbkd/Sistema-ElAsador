@@ -1,4 +1,6 @@
 /* eslint-disable no-unused-vars */
+import { jwtDecode } from 'jwt-decode'
+
 /**
  * Valida si un string tiene formato de JWT válido
  * Un JWT válido debe tener 3 partes separadas por puntos: header.payload.signature
@@ -16,6 +18,37 @@ export const isValidJWT = (token) => {
   
   // Cada parte debe ser base64url válido (no vacío)
   return parts.every(part => part.length > 0)
+}
+
+/**
+ * Revisa el claim `exp` del JWT (sin verificar firma) para saber si ya venció.
+ * Se usa solo para reaccionar rápido en el cliente (p. ej. al volver del background);
+ * la verificación real de firma/expiración siempre la hace el backend.
+ */
+export const isTokenExpired = (token) => {
+  try {
+    const decoded = jwtDecode(token)
+    if (!decoded?.exp) return false
+    return decoded.exp < Date.now() / 1000
+  } catch (error) {
+    return true
+  }
+}
+
+/**
+ * Indica si conviene renovar el token: todavía es válido, pero le queda menos
+ * del umbral indicado de vida (por defecto 2h). Se usa para deslizar la sesión
+ * mientras el usuario sigue activo, sin esperar a que el token expire.
+ */
+export const debeRenovarToken = (token, umbralSegundos = 2 * 60 * 60) => {
+  try {
+    const decoded = jwtDecode(token)
+    if (!decoded?.exp) return false
+    const segundosRestantes = decoded.exp - Date.now() / 1000
+    return segundosRestantes > 0 && segundosRestantes < umbralSegundos
+  } catch (error) {
+    return false
+  }
 }
 
 /**
@@ -47,12 +80,12 @@ export const getValidToken = () => {
       return null
     }
     
-    if (!isValidJWT(token)) {
-      // Token inválido, limpiar localStorage
+    if (!isValidJWT(token) || isTokenExpired(token)) {
+      // Token inválido o vencido, limpiar localStorage
       clearAuthData()
       return null
     }
-    
+
     return token
   } catch (error) {
     return null
