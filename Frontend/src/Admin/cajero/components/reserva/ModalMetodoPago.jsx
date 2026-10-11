@@ -1,7 +1,7 @@
 // components/ModalMetodoPago.jsx
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
-import { QrCode, DollarSign, X, Coins } from 'lucide-react'
+import { QrCode, DollarSign, X, Coins, Clock } from 'lucide-react'
 
 export const ModalMetodoPago = ({ isOpen, onClose, onConfirmar, total }) => {
   const [metodoSeleccionado, setMetodoSeleccionado] = useState(null)
@@ -105,6 +105,23 @@ export const ModalMetodoPago = ({ isOpen, onClose, onConfirmar, total }) => {
                     <span className="flex-1 text-left font-medium text-gray-900">Efectivo</span>
                     {metodoSeleccionado === 'EFECTIVO' && (
                       <div className="w-2 h-2 rounded-full bg-green-600" />
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setMetodoSeleccionado('PENDIENTE')}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all
+                      ${metodoSeleccionado === 'PENDIENTE'
+                        ? 'border-yellow-500 bg-yellow-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                  >
+                    <div className={`p-2 rounded-lg ${metodoSeleccionado === 'PENDIENTE' ? 'bg-yellow-100' : 'bg-gray-100'}`}>
+                      <Clock size={20} className={metodoSeleccionado === 'PENDIENTE' ? 'text-yellow-600' : 'text-gray-600'} />
+                    </div>
+                    <span className="flex-1 text-left font-medium text-gray-900">Pendiente</span>
+                    {metodoSeleccionado === 'PENDIENTE' && (
+                      <div className="w-2 h-2 rounded-full bg-yellow-600" />
                     )}
                   </button>
                 </div>

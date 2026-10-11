@@ -188,7 +188,7 @@ export class VentaServicio {
           total
         })
       }
-      if (tipo === 'LLEVAR') {
+      if (tipo === 'LLEVAR' && metodoPago.toLocaleLowerCase() !== 'pendiente') {
         await this.imprimirVenta({ ventaId: venta.id, metodoPago })
         await this.cajeroServicio.registrarPago({ body: { ventaId: venta.id, metodoPago }, usuarioId, io })
       }
