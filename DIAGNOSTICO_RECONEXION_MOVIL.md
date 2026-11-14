@@ -2,7 +2,7 @@
 
 **Fecha del diagnóstico:** 2026-09-05
 **Rama analizada:** `desktop-electron`
-**Estado:** Solo diagnóstico. No se modificó código en esta fase.
+**Estado:** Diagnóstico aplicado. Se implementaron controles de sesión y reconexión; este documento conserva las causas y las recomendaciones operativas.
 
 ## 1. Síntoma reportado
 
@@ -161,14 +161,19 @@ Esto explica por qué "carga rápido" comparado con quedarse en una ruta protegi
 
 La combinación de estos tres factores explica tanto la variabilidad (depende de cuánto tiempo pasó, si el JWT ya venció, y cómo iOS decidió suspender esa pestaña en particular) como la mayor incidencia en iOS frente a otras plataformas.
 
-## 5. Próximos pasos propuestos (no implementados aún)
+## 5. Cambios implementados
 
-En orden de prioridad sugerido:
+Se aplicaron los siguientes cambios:
 
-1. **Agregar `timeout` a la instancia de Axios** (p. ej. 15s) y afinar `retry`/`retryDelay` de React Query para que un fallo se muestre rápido en vez de colgarse varias decenas de segundos.
-2. **Verificar el JWT real en el handshake del socket** (`io.use(...)` en el backend) en vez de confiar en el payload decodificado sin firma — como mínimo, rechazar/forzar reconexión cuando el token ya venció.
-3. **Revalidar la sesión al recuperar visibilidad/foco**: decodificar el claim `exp` localmente (ya se usa `jwt-decode` en el proyecto) y, si el token ya venció, forzar un logout limpio inmediato — antes de que cualquier fetch quede colgado. Esto no requiere un endpoint nuevo si se acepta un chequeo de expiración solo en el cliente.
-4. **Agregar manejo de `pagehide`/`pageshow`** además de `visibilitychange`, para cubrir el bfcache de iOS Safari.
-5. **(Opcional, mayor alcance) Introducir un refresh token** o renovar el JWT de forma transparente mientras la sesión está activa, para que un mesero no tenga que volver a loguearse tras 24h de turno continuo.
+- Axios tiene un timeout de 15 segundos y React Query limita los reintentos a uno.
+- Socket.IO verifica el JWT firmado durante el handshake.
+- El cliente valida la expiración local del JWT y renueva sesiones próximas a vencer.
+- Se manejan `visibilitychange`, `pageshow`, `online` y desconexiones iniciadas por el servidor.
+- Las reconexiones automáticas del socket están limitadas para evitar ciclos agresivos; al volver a la pestaña se actualiza el token y se intenta una conexión controlada.
 
-Estos cambios se abordarán en una conversación de implementación posterior, priorizados según lo que decidas.
+## 6. Recomendaciones operativas y pendientes
+
+1. Probar con la laptop conectada por Ethernet. Al estar el host y varios móviles en WiFi, una caída selectiva de clientes puede ser del punto de acceso, interferencia o ahorro de energía del router; que un celular nuevo funcione no descarta ese problema.
+2. Durante el próximo incidente, comprobar desde un móvil afectado si `http://192.168.1.6:5173` abre y si `http://192.168.1.6:3000` responde. Si ambos fallan, el problema es red/firewall, no autenticación.
+3. Si la página abre pero el login falla, revisar la consola de Electron buscando `TOKEN_EXPIRED`, `TOKEN_INVALID`, `ECONNRESET` o `Not allowed by CORS`.
+4. Mantener como mejora futura un refresh token dedicado si se requiere una sesión sin límite práctico de duración.

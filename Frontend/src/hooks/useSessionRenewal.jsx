@@ -33,8 +33,9 @@ export const useSessionRenewal = () => {
         const { data } = await instancia.post('/auth/renovar')
         if (data?.token) {
           localStorage.setItem('token', data.token)
+          window.dispatchEvent(new Event('auth-token-updated'))
         }
-      } catch (error) {
+      } catch {
         // Se ignora: si el token ya no sirve, el interceptor de 401 o la
         // verificación de expiración en getValidToken() harán el logout.
       } finally {

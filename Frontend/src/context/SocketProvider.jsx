@@ -25,6 +25,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null)
   const [isConnected, setIsConnected] = useState(false)
   const reconnectTimeoutRef = useRef(null)
+  const socketRef = useRef(null)
 
   const createSocketConnection = (token) => {
     const decodeToken = safeDecodeToken(token)
@@ -43,7 +44,7 @@ export const SocketProvider = ({ children }) => {
       transports: ['websocket', 'polling'],
       timeout: 10000,
       reconnection: true,
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts: 8,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       randomizationFactor: 0.3,
@@ -57,7 +58,7 @@ export const SocketProvider = ({ children }) => {
     nuevaConexionIo.on('disconnect', (reason) => {
       setIsConnected(false)
 
-      if (reason === 'ping timeout' && document.visibilityState === 'visible') {
+      if (reason !== 'io client disconnect' && document.visibilityState === 'visible') {
         clearTimeout(reconnectTimeoutRef.current)
         reconnectTimeoutRef.current = setTimeout(() => {
           if (!nuevaConexionIo.connected) {
@@ -99,6 +100,7 @@ export const SocketProvider = ({ children }) => {
     try {
       const nuevaConexionIo = createSocketConnection(token)
       if (!nuevaConexionIo) return
+      socketRef.current = nuevaConexionIo
       setSocket(nuevaConexionIo)
 
       return () => {
@@ -128,6 +130,7 @@ export const SocketProvider = ({ children }) => {
 
         const nuevaConexionIo = createSocketConnection(token)
         if (!nuevaConexionIo) return
+        socketRef.current = nuevaConexionIo
         setSocket(nuevaConexionIo)
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
@@ -140,6 +143,7 @@ export const SocketProvider = ({ children }) => {
       if (socket) {
         socket.disconnect()
       }
+      socketRef.current = null
       setSocket(null)
       setIsConnected(false)
     }
@@ -153,6 +157,19 @@ export const SocketProvider = ({ children }) => {
       window.removeEventListener('auth-logout', handleLogout)
     }
   }, [socket])
+
+  useEffect(() => {
+    const handleTokenUpdated = () => {
+      const token = getValidToken()
+      const socketActual = socketRef.current
+      if (token && socketActual) {
+        socketActual.auth = { token }
+      }
+    }
+
+    window.addEventListener('auth-token-updated', handleTokenUpdated)
+    return () => window.removeEventListener('auth-token-updated', handleTokenUpdated)
+  }, [])
 
   useEffect(() => {
     if (!socket || typeof window === 'undefined') return
@@ -170,6 +187,7 @@ export const SocketProvider = ({ children }) => {
       }
 
       if (!socket.connected) {
+        socket.auth = { token: getValidToken() }
         socket.connect()
       }
     }

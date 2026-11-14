@@ -93,7 +93,7 @@ export class VentasAdminServicio {
       // Si el filtro es un número, buscar por nroMesa, si no, buscar por clienteNombre
       const ventasMesas = await this.modeloVenta.findAll({
         include: [{
-          modelo: this.modeloUsuario,
+          model: this.modeloUsuario,
           attributes: ['nombre']
         }],
         where: {
